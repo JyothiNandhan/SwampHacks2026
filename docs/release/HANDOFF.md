@@ -1,18 +1,19 @@
 # T20–T25 backend handoff
 
-This branch implements the backend integration and offline release verification.
-Railway deployment is **pending**: no Railway project/service has been created and
-no Railway credentials, live provider keys or deployed database were supplied.
-The backend release gate remains open until live checks and deployment evidence pass.
+The API and worker are deployed to Railway; Tiger Data TLS, migrations, authenticated
+routes, live receipt extraction and storage across redeployment have been verified.
+The full live release gate remains open because Nessie rejects sandbox purchase
+listing and retail search observations do not establish exact-product eligibility.
+Frontend work is paused while these backend release checks are completed.
 
-| Task | Delivered | Remaining external verification |
+| Task | Delivered and verified | Remaining release evidence |
 |---|---|---|
-| T20 | All registered contract routes, user authorization, environment checks, OpenAPI and private evidence adapter | Provision secrets/users/volume and deploy Railway API |
-| T21 | Database-backed manual/scheduled jobs, opt-in scheduling, worker-to-API execution, provider adapter integration, labeled test replay | Verify live retailer credentials/dataset URLs and Railway worker |
-| T22 | Imported completed Nessie deposit reconciliation, partial refunds, audit evidence and allocation guards | Exercise real Nessie sandbox customer/account/deposit records |
-| T23 | Reproducible 15-case synthetic evaluation and measured JSON report | Real photographed/email receipt corpus and live Gemini accuracy evaluation |
-| T24 | API smoke flow including actual job runner, PostgreSQL persistence and refund confirmation; CI on Anish | Green remote CI and stable Railway deployment |
-| T25 | Postman collection, OpenAPI export, backend demo commands and operator handoff | Deployed API log screenshots and final team demo |
+| T20 | Contract routes, auth/authz, env validation, OpenAPI, Railway API, private volume and verified database TLS | Check the latest deployment after backend changes |
+| T21 | Real Railway worker connectivity; SerpApi live priced observations; Bright Data collection transport; conservative source persistence and replay tests | Verified exact-product live offers and a priced live worker job |
+| T22 | PostgreSQL smoke verifies approval, correlated completed simulated deposits, partial refunds and allocation guards | Nessie sandbox purchase import and complete live simulated refund flow |
+| T23 | 15/15 synthetic regression cases; live Gemini synthetic email extraction | A consented real photographed/email receipt corpus for real-world accuracy |
+| T24 | Green remote CI; current real-driver PostgreSQL migration and smoke checks; stable Railway API/worker | Complete live bank-to-simulated-refund flow |
+| T25 | Postman collection, OpenAPI, backend demo commands and updated release handoff | Final backend demo and redacted Railway log screenshots |
 
 ## Local verification
 
@@ -34,7 +35,7 @@ explicit approval, records a staff-authorized simulated submission, imports comp
 partial deposits and confirms exactly 5,000 simulated cents. It rejects unrelated
 same-value deposits, pending/future deposits and cross-user access. Replay retries
 reuse job results and deposit allocations. The smoke also checks scheduling consent
-and hourly enqueue deduplication. Retail integration uses actual Best Buy/Bright Data
+and hourly enqueue deduplication. Retail integration uses actual SerpApi/Bright Data
 adapters with mocked HTTP including asynchronous snapshots. No live providers are
 claimed by these tests.
 
@@ -277,3 +278,18 @@ passed (EXTRACTED, USD 300.00). After the API changed instance, the existing upl
 receipt retained its original checksum: persistence across redeployment passed.
 The Nessie purchase-listing HTTP 400 remains reproducible; the complete live bank-to-
 simulated-refund release check remains pending. See VERIFICATION.md for current results.
+
+
+For an automated persistence gate, run `scripts/verify-live.mjs --documents
+--require-persistence`. An unchanged API instance, failed extraction or failed worker
+probe now returns a nonzero exit status. The report identifies when a worker probe
+reuses an already completed idempotent job; that is not a fresh retailer execution.
+Nessie accepts the documented `transaction_date` purchase field as well as legacy
+`purchase_date`; missing or contradictory dates fail before any import is saved.
+
+
+Fresh provider-availability check: the three-case live Gemini synthetic email run
+returned HTTP 503 for all requests. No new extraction/accuracy pass is claimed; see
+`live-receipt-evaluation.json`. Use `scripts/evaluate-live-receipts.mjs` to repeat it
+once the provider is available. The safe deployed receipt check reads an already
+extracted receipt and does not substitute for a fresh provider request.

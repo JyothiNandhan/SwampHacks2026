@@ -23,6 +23,7 @@ async function api(path,method='GET',body){
 try{
  if(!token||!process.env.DATABASE_URL)throw new Error('LOCAL_CREDENTIALS_MISSING');
  const health=await api('/health');report.health='PASS';report.revision=health.revision;
+ if(process.argv.includes('--require-persistence')&&!process.argv.includes('--documents'))throw new Error('PERSISTENCE_REQUIRES_DOCUMENT_CHECK');
  if((process.argv.includes('--worker')||process.argv.includes('--documents'))&&health.revision!=='document-upload-v1')throw new Error('DEPLOY_LATEST_RELEASE_CHECKS_FIRST');
  const databaseUrl=new URL(process.env.DATABASE_URL);databaseUrl.searchParams.set('sslmode','verify-full');databaseUrl.searchParams.set('sslrootcert',fileURLToPath(new URL('../config/tigerdata-ca.pem',import.meta.url)));
  client=new pg.Client({connectionString:databaseUrl.toString(),connectionTimeoutMillis:10000,statement_timeout:15000});await client.connect();await client.query('SELECT 1');report.database='PASS';
@@ -47,11 +48,12 @@ try{
    await client.query('COMMIT');state.workerProbePurchaseId=purchaseId;save();
   }catch(error){await client.query('ROLLBACK');throw error;}
   const job=(await api('/api/v1/monitoring/prices/run','POST',{purchaseIds:[state.workerProbePurchaseId]})).data;
-  if(!uuid(job.id))throw new Error('INVALID_JOB_RESPONSE');state.workerProbeJobId=job.id;save();
+  if(!uuid(job.id))throw new Error('INVALID_JOB_RESPONSE');const reusedJob=state.workerProbeJobId===job.id;state.workerProbeJobId=job.id;save();
   const deadline=Date.now()+45000;let row;
   do{row=(await client.query('SELECT status,result_json FROM jobs WHERE id=$1',[job.id])).rows[0];if(['SUCCEEDED','FAILED'].includes(row?.status))break;await new Promise(resolve=>setTimeout(resolve,2000));}while(Date.now()<deadline);
-  report.worker={status:row?.status??'UNKNOWN',connectivityPassed:row?.status==='SUCCEEDED'&&row.result_json?.skippedPurchases===1,retailTested:false};
+  report.worker={status:row?.status??'UNKNOWN',connectivityPassed:row?.status==='SUCCEEDED'&&row.result_json?.skippedPurchases===1,retailTested:false,reusedJob};
   if(row?.result_json?.error)report.worker.errorCode=safeCode(row.result_json.error);
+  if(!report.worker.connectivityPassed)throw new Error('WORKER_CONNECTIVITY_CHECK_FAILED');
  }
  if(process.argv.includes('--documents')){
   if(!state.document){
@@ -68,6 +70,8 @@ try{
    if(!uuid(receipt.id))throw new Error('INVALID_RECEIPT_RESPONSE');state.receiptId=receipt.id;save();}
   const receipt=(await client.query('SELECT extraction_status,total_cents FROM receipts WHERE id=$1',[state.receiptId])).rows[0];
   report.gemini={status:receipt?.extraction_status??'MISSING',totalMatches:receipt?.total_cents===30000};
+  if(report.gemini.status!=='EXTRACTED'||!report.gemini.totalMatches)throw new Error('RECEIPT_EXTRACTION_CHECK_FAILED');
+  if(process.argv.includes('--require-persistence')&&report.documentPersistence!=='PASS_ACROSS_INSTANCE_CHANGE')throw new Error('PERSISTENCE_REDEPLOY_REQUIRED');
  }
 }catch(error){report.error={code:safeCode(error.code??error.message),...(Number.isInteger(error.status)?{httpStatus:error.status}:{})};process.exitCode=1;}
 finally{await client?.end().catch(()=>{});}

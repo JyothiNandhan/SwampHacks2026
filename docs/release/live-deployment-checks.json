@@ -1,0 +1,19 @@
+{
+  "health": "PASS",
+  "revision": "document-upload-v1",
+  "database": "PASS",
+  "migration": "PASS",
+  "authenticatedPurchases": "PASS",
+  "worker": {
+    "status": "SUCCEEDED",
+    "connectivityPassed": true,
+    "retailTested": false,
+    "reusedJob": true
+  },
+  "documentWriteAndRead": "PASS",
+  "documentPersistence": "PASS_ACROSS_INSTANCE_CHANGE",
+  "gemini": {
+    "status": "EXTRACTED",
+    "totalMatches": true
+  }
+}

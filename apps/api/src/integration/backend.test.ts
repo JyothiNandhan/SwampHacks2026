@@ -16,7 +16,7 @@ import { buildApp } from '../app.js';
 import { loadConfig } from '../config.js';
 import { BackendService } from './service.js';
 import { tokenHash } from './security.js';
-import { createOfferProvider } from './prices.js';
+import { createOfferProvider, createPriceExecutor } from './prices.js';
 import { loadIntegrationConfig } from './config.js';
 import type { NessieReader } from '../modules/banking/nessie-import.js';
 
@@ -24,7 +24,7 @@ const userId='11111111-1111-4111-8111-111111111111';
 const otherId='22222222-2222-4222-8222-222222222222';
 const userToken='test-user-token-'.padEnd(48,'u'); const otherToken='test-other-token-'.padEnd(48,'o'); const workerToken='test-worker-token-'.padEnd(48,'w');
 async function fixture(){
-  const sql=readFileSync(new URL('../../../../packages/db/src/migrations/001_init_tiger_data.sql',import.meta.url),'utf8');
+  const sql=['001_init_tiger_data','002_serpapi_source'].map(id=>readFileSync(new URL(`../../../../packages/db/src/migrations/${id}.sql`,import.meta.url),'utf8')).join('\n');
   let pool:pg.Pool; let cleanup:()=>Promise<void>;
   if(process.env.TEST_DATABASE_URL){
     const schema=`release_test_${randomUUID().replaceAll('-','')}`;
@@ -177,4 +177,19 @@ test('worker executor skips purchases without extracted items without contacting
     expect(await s.service.executePrices(userId,[purchaseId])).toMatchObject({observations:0,opportunities:0,skippedPurchases:1});
     expect(s.offers).not.toHaveBeenCalled();
   }finally{await s.close();}
+},60000);
+
+test('SerpApi observations persist with their true source and cannot create unsupported savings',async()=>{
+ const s=await fixture();try{
+  const purchaseId=(await s.pool.query("INSERT INTO purchases(user_id,merchant_name,purchased_at,amount_cents) VALUES($1,'Demo',NOW(),30000) RETURNING id",[userId])).rows[0].id;
+  await s.pool.query("INSERT INTO purchase_items(user_id,purchase_id,name,model,quantity,unit_price_cents) VALUES($1,$2,'Demo Watch','DW-1',1,30000)",[userId,purchaseId]);
+  const config=loadIntegrationConfig({SERPAPI_API_KEY:'fixture'});
+  const provider=createOfferProvider(config,s.pool,vi.fn<typeof fetch>().mockResolvedValue(Response.json({shopping_results:[{product_id:'search-123',title:'Demo Watch DW-1',source:'Demo Store',price:'$250.00',extracted_price:250,product_link:'https://www.google.com/shopping/product/123'},{product_id:'search-456',title:'Another Demo Watch',source:'Demo Store',price:'$245.00',extracted_price:245,product_link:'https://www.google.com/shopping/product/456'}]})));
+  const result=await createPriceExecutor(s.pool,config,provider)(userId,[purchaseId]);
+  expect(result).toMatchObject({observations:2,opportunities:0,replay:false});
+  expect((await s.pool.query('SELECT source,model,shipping_cents,in_stock,condition FROM product_offers WHERE purchase_id=$1',[purchaseId])).rows).toEqual([{source:'SERPAPI',model:null,shipping_cents:null,in_stock:null,condition:'UNKNOWN'},{source:'SERPAPI',model:null,shipping_cents:null,in_stock:null,condition:'UNKNOWN'}]);
+  const history=(await s.pool.query('SELECT source,product_key FROM price_time_series WHERE user_id=$1',[userId])).rows;
+  expect(history).toHaveLength(2);expect(new Set(history.map(r=>r.product_key)).size).toBe(2);expect(history.every(r=>r.source==='SERPAPI'&&r.product_key.startsWith('SERPAPI:url:'))).toBe(true);
+  expect((await s.pool.query('SELECT count(*)::int AS count FROM opportunities WHERE purchase_id=$1',[purchaseId])).rows[0].count).toBe(0);
+ }finally{await s.close();}
 },60000);

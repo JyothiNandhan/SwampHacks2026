@@ -91,3 +91,15 @@ describe('T08 Nessie import', () => {
     }
   }, 30_000);
 });
+
+test('accepts documented transaction_date purchases and rejects ambiguous or missing dates before saving',async()=>{
+ for(const fields of [{transaction_date:'2026-10-16'},{purchase_date:'2026-10-16',transaction_date:'2026-10-16T00:00:00.000Z'},{purchase_date:'2026-10-15',transaction_date:'2026-10-16'},{}]){
+  const client=fixtureReader();const original=client.get.bind(client);
+  client.get=async(path,schema)=>path.endsWith('/purchases')?schema.parse([{_id:'purchase-date-test',amount:10,...fields}]):original(path,schema);
+  const saveImport=vi.fn(async(_user:string,batch:NessieImportBatch)=>({accounts:batch.accounts.length,purchases:batch.purchases.length,bills:batch.bills.length,deposits:batch.deposits.length}));
+  const run=createNessieImporter({client,store:{saveImport}})('user-1','customer-1');
+  if(fields.transaction_date==='2026-10-16'&&fields.purchase_date==='2026-10-15'){await expect(run).rejects.toThrow('NESSIE_PURCHASE_DATE_CONFLICT');expect(saveImport).not.toHaveBeenCalled();}
+  else if(!fields.transaction_date&&!fields.purchase_date){await expect(run).rejects.toThrow('NESSIE_PURCHASE_DATE_REQUIRED');expect(saveImport).not.toHaveBeenCalled();}
+  else{await expect(run).resolves.toMatchObject({purchases:1});expect(saveImport.mock.calls[0][1].purchases[0].occurredAt).toBe('2026-10-16T00:00:00.000Z');}
+ }
+});

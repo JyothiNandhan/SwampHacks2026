@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import { PurchaseSchema, ReceiptItemSchema, ProductOfferSchema, type ProductOffer, type Purchase } from '@moneyback/contracts';
 import { buildPriceDropOpportunity } from '../modules/retail/price-monitor.js';
@@ -62,7 +62,9 @@ export function createPriceExecutor(pool: pg.Pool, config: IntegrationConfig, pr
             [userId,purchase.id,offer.source,offer.retailerName,offer.productName,offer.sku,offer.model,offer.gtin,offer.condition,offer.priceCents,offer.shippingCents,offer.inStock,offer.productUrl,offer.observedAt]);
           if (!saved.rows.length) return;
           observations++;
-          const productKey = offer.gtin ? `gtin:${offer.gtin}` : `model:${offer.model ?? offer.sku}`;
+          const productKey = offer.gtin ? `gtin:${offer.gtin}` : offer.model ? `model:${offer.model}` :
+            offer.sku ? `${offer.source}:${offer.retailerName}:sku:${offer.sku}` :
+              `${offer.source}:url:${createHash('sha256').update(offer.productUrl).digest('hex')}`;
           await client.query(`INSERT INTO price_time_series(user_id,product_key,retailer_name,price_cents,observed_at,source) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`, [userId,productKey,offer.retailerName,offer.priceCents+(offer.shippingCents??0),offer.observedAt,offer.source]);
           const evidence = (await client.query(`INSERT INTO evidence(user_id,source_type,source_id,category,acquisition_method,raw_url) VALUES($1,'OFFER',$2,$3,$4,$5) RETURNING id`, [userId,saved.rows[0].id,'PRICE_OBSERVATION',offer.source === 'FIXTURE' ? 'LABELED_REPLAY' : 'PROVIDER_API',offer.productUrl])).rows[0].id;
           const policy = (await client.query(`SELECT id,parsed_end_at FROM policies WHERE user_id=$1 AND purchase_id=$2 AND policy_type='RETURN' AND parsed_end_at>$3 ORDER BY parsed_end_at LIMIT 1`, [userId,purchase.id,now])).rows[0];

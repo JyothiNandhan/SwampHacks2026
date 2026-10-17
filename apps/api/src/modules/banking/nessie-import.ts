@@ -11,7 +11,7 @@ const NessieAccountSchema = z.object({
 });
 const NessiePurchaseSchema = z.object({
   _id: ProviderId, merchant_id: ProviderId.nullish(), amount: z.number().finite().nonnegative(),
-  purchase_date: z.string().min(1), description: z.string().nullish(), status: z.string().nullish()
+  purchase_date: z.string().min(1).nullish(), transaction_date: z.string().min(1).nullish(), description: z.string().nullish(), status: z.string().nullish()
 });
 const NessieMerchantSchema = z.object({ _id: ProviderId, name: z.string().min(1) });
 const NessieBillSchema = z.object({
@@ -208,8 +208,18 @@ function normalizePurchase(account: ProviderAccount, purchase: ProviderPurchase,
     merchantId: clean(purchase.merchant_id),
     merchantName: purchase.merchant_id ? merchants.get(purchase.merchant_id) ?? clean(purchase.description) : clean(purchase.description),
     amountCents: dollarsToCents(purchase.amount),
-    occurredAt: toIsoDateTime(purchase.purchase_date)
+    occurredAt: purchaseTimestamp(purchase)
   };
+}
+
+/** Current Nessie docs use transaction_date; earlier SDK payloads use purchase_date. */
+function purchaseTimestamp(purchase: ProviderPurchase): string {
+  if (!purchase.purchase_date && !purchase.transaction_date) throw new Error('NESSIE_PURCHASE_DATE_REQUIRED');
+  const date = toIsoDateTime(purchase.purchase_date ?? purchase.transaction_date!);
+  if (purchase.purchase_date && purchase.transaction_date && date !== toIsoDateTime(purchase.transaction_date)) {
+    throw new Error('NESSIE_PURCHASE_DATE_CONFLICT');
+  }
+  return date;
 }
 
 function normalizeBill(account: ProviderAccount, bill: ProviderBill): NessieImportBatch['bills'][number] {

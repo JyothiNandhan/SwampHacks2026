@@ -2,7 +2,7 @@
 
 ## Current local checks
 
-- `pnpm check`: version pins, contracts, workspace types, 172 tests and backend builds passed.
+- `pnpm check`: version pins, contracts, workspace types, 174 tests and backend builds passed.
   One optional PostgreSQL-driver test was skipped by the default run.
 - Migration upgrade test preserves historical Best Buy offers, accepts SerpApi offers,
   rejects unknown sources and verifies migration replay.
@@ -40,3 +40,29 @@ Historical local PostgreSQL-driver validation used a temporary PostgreSQL 14.21
 server: three integration/driver tests passed and test schemas were dropped.
 GitHub CI configures PostgreSQL 16.10. These historical checks do not establish a
 complete deployed live-provider release.
+
+
+## Backend completion pass
+
+- Current real PostgreSQL 14.21 run: migration 001/002, migration replay, database pool
+  recovery and all five backend integration tests passed (six tests total).
+- SerpApi observations persisted under SERPAPI in both offers and history; uncertain
+  listings created zero savings opportunities.
+- Current `live-deployment-checks.json` passes authenticated reads, verified database
+  TLS/migration checks, receipt read-back, prior extraction totals and cross-instance
+  persistence. Its worker result explicitly reuses a completed connectivity probe.
+- Remote main CI was green at `c1a5c04` (run 39075420858), before these final backend fixes.
+- Fresh live Gemini evaluation was attempted on three synthetic EMAIL examples.
+  All three requests returned provider HTTP 503; no extraction behavior or accuracy
+  conclusion can be drawn from that run. See live-receipt-evaluation.json. The earlier
+  successful live receipt extraction remains historical evidence, not a current
+  provider availability guarantee.
+- The backend demo collection now asserts successful responses, captures uploaded
+  document/receipt/case IDs, and checks the document checksum. DEMO.md documents
+  individual request order and the boundary between live checks and offline replay.
+
+The supplied https://nessieisreal.com site publishes the same production API origin
+used by the application. It does not change the reproduced purchase validation
+failure. NESSIE_BLOCKER.md is the credential-free provider report.
+- Unidentified SerpApi listings now receive distinct source-and-URL price-history
+  keys; two separate products no longer share a `model:null` history stream.

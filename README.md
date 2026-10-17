@@ -185,3 +185,14 @@ Run `pnpm check` and `pnpm --filter @moneyback/api test:release`.
 **Deployment remains pending.** No Railway project exists yet. Live provider tests,
 deployed API logs/screenshots and Railway release verification are required before
 marking T20–T25 fully complete or passing the T24 release gate.
+
+
+### Backend release status — October 17, 2026
+
+Frontend development is paused. Backend local and real PostgreSQL checks pass;
+Railway receipt storage persists across API redeployments. See
+[the backend demo](docs/release/DEMO.md) and [measured verification](docs/release/VERIFICATION.md).
+T22/T24 live sign-off remains open: Nessie purchase listing returns a provider
+validation error, exact-product live retail eligibility still needs evidence, and
+fresh Gemini evaluation currently returns HTTP 503. The existing offline refund
+smoke uses labeled fixture providers and simulated reimbursements.

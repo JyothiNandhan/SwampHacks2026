@@ -2,7 +2,7 @@
   "info": {
     "name": "MoneyBack OS backend T20\u2013T25",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Backend handoff. Set variables and provision your own sandbox evidence. Fixtures/replay are not real refunds. Manual price trigger requires demo/admin role. Approval never submits a merchant request."
+    "description": "Backend-only sandbox demo. Select individual requests as documented in DEMO.md; do not run the entire collection unattended. Set your private accessToken and sandbox IDs. Potential savings require verified evidence; refunds are simulated only."
   },
   "auth": {
     "type": "bearer",
@@ -17,7 +17,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3001"
+      "value": "https://swamphacks2026-production.up.railway.app"
     },
     {
       "key": "accessToken",
@@ -87,7 +87,22 @@
         "auth": {
           "type": "noauth"
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "  pm.test(\"API is healthy\", function () { pm.expect(result.status).to.eql(\"ok\"); });",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "POST /sync/nessie",
@@ -109,7 +124,21 @@
             }
           }
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "GET /purchases",
@@ -122,7 +151,21 @@
           }
         ],
         "url": "{{baseUrl}}/api/v1/purchases"
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "GET /subscriptions",
@@ -135,7 +178,21 @@
           }
         ],
         "url": "{{baseUrl}}/api/v1/subscriptions"
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "GET /purchases/:purchaseId/timeline",
@@ -148,257 +205,21 @@
           }
         ],
         "url": "{{baseUrl}}/api/v1/purchases/{{purchaseId}}/timeline"
-      }
-    },
-    {
-      "name": "POST /receipts/ingest",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/receipts/ingest",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"source\": \"PHOTO\",\n  \"originalFileId\": \"{{originalFileId}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
           }
         }
-      }
-    },
-    {
-      "name": "POST /receipts/match",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/receipts/match",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"receiptId\": \"{{receiptId}}\",\n  \"transactionIds\": [\n    \"{{transactionId}}\"\n  ]\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "POST /receipts/:receiptId/consolidate",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/receipts/{{receiptId}}/consolidate",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"receiptIds\": [\n    \"{{receiptId}}\",\n    \"{{duplicateReceiptId}}\"\n  ]\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "POST /policies/extract",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/policies/extract",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"purchaseId\": \"{{purchaseId}}\",\n  \"evidenceIds\": [\n    \"{{policyEvidenceId}}\"\n  ]\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "POST /billing/compare",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/billing/compare",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"purchaseId\": \"{{purchaseId}}\",\n  \"evidenceIds\": [\n    \"{{agreementEvidenceId}}\",\n    \"{{billEvidenceId}}\"\n  ]\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "GET /offers/:purchaseId",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/offers/{{purchaseId}}"
-      }
-    },
-    {
-      "name": "POST /monitoring/prices/run",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/monitoring/prices/run",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"purchaseIds\": [\n    \"{{purchaseId}}\"\n  ]\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "GET /opportunities",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/opportunities"
-      }
-    },
-    {
-      "name": "POST /recovery/cases",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/recovery/cases",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"opportunityId\": \"{{opportunityId}}\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "POST /recovery/cases/:caseId/approve",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/recovery/cases/{{caseId}}/approve",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"approved\": true\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "POST /refunds/reconcile",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/refunds/reconcile",
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"caseId\": \"{{caseId}}\",\n  \"depositIds\": [\n    \"{{depositId}}\"\n  ]\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      }
-    },
-    {
-      "name": "GET /notifications",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/notifications"
-      }
-    },
-    {
-      "name": "GET /deadlines",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/deadlines"
-      }
+      ]
     },
     {
       "name": "POST /documents",
@@ -420,7 +241,23 @@
             }
           }
         }
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "  pm.collectionVariables.set(\"originalFileId\", result.data.originalFileId);",
+              "  pm.collectionVariables.set(\"documentChecksum\", result.data.checksum);",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "GET /documents/:originalFileId",
@@ -428,7 +265,456 @@
         "method": "GET",
         "header": [],
         "url": "{{baseUrl}}/api/v1/documents/{{originalFileId}}"
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "  pm.test(\"Original checksum is unchanged\", function () { pm.expect(result.data.checksum).to.eql(pm.collectionVariables.get(\"documentChecksum\")); });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /receipts/ingest",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/receipts/ingest",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": \"PHOTO\",\n  \"originalFileId\": \"{{originalFileId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "  pm.collectionVariables.set(\"receiptId\", result.data.id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /receipts/match",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/receipts/match",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"receiptId\": \"{{receiptId}}\",\n  \"transactionIds\": [\n    \"{{transactionId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /receipts/:receiptId/consolidate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/receipts/{{receiptId}}/consolidate",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"receiptIds\": [\n    \"{{receiptId}}\",\n    \"{{duplicateReceiptId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /policies/extract",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/policies/extract",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseId\": \"{{purchaseId}}\",\n  \"evidenceIds\": [\n    \"{{policyEvidenceId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /billing/compare",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/billing/compare",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseId\": \"{{purchaseId}}\",\n  \"evidenceIds\": [\n    \"{{agreementEvidenceId}}\",\n    \"{{billEvidenceId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /offers/:purchaseId",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/offers/{{purchaseId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /monitoring/prices/run",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/monitoring/prices/run",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseIds\": [\n    \"{{purchaseId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /opportunities",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/opportunities"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /recovery/cases",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/recovery/cases",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"opportunityId\": \"{{opportunityId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "  pm.collectionVariables.set(\"caseId\", result.data.id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /recovery/cases/:caseId/approve",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/recovery/cases/{{caseId}}/approve",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"approved\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST /refunds/reconcile",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/refunds/reconcile",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"caseId\": \"{{caseId}}\",\n  \"depositIds\": [\n    \"{{depositId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /notifications",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/notifications"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET /deadlines",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/deadlines"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Request succeeded\", function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) {",
+              "  const result = pm.response.json();",
+              "}"
+            ]
+          }
+        }
+      ]
     }
   ]
 }

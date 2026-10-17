@@ -1,0 +1,30 @@
+{
+  "provider": "GEMINI",
+  "mode": "LIVE",
+  "syntheticOnly": true,
+  "source": "EMAIL",
+  "model": "gemini-3.8-flash",
+  "realWorldAccuracyMeasured": false,
+  "passed": 0,
+  "total": 3,
+  "results": [
+    {
+      "id": "complete-email",
+      "passed": false,
+      "providerHttpStatus": 503,
+      "errorCode": "EXTRACTION_PROVIDER_FAILED"
+    },
+    {
+      "id": "non-receipt-injection",
+      "passed": false,
+      "providerHttpStatus": 503,
+      "errorCode": "EXTRACTION_PROVIDER_FAILED"
+    },
+    {
+      "id": "uncertain-currency-and-timezone",
+      "passed": false,
+      "providerHttpStatus": 503,
+      "errorCode": "EXTRACTION_PROVIDER_FAILED"
+    }
+  ]
+}
