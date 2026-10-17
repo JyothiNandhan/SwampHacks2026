@@ -28,7 +28,20 @@ export function createOfferProvider(config: IntegrationConfig, pool: pg.Pool, fe
     const quotes: StoreQuote[] = [];
     if (serp) for (const item of purchase.items) {
       const query = [item.brand,item.model].filter(Boolean).join(' ');
-      if (query) {offers.push(...await serp.searchOffers(query, 5));if(bright&&item.model)quotes.push(...await serp.getStoreQuotes(`${query} ${item.name} new`.slice(0,300),item.model));}
+      if (query) {
+        offers.push(...await serp.searchOffers(query, 5));
+        if (bright && item.model) {
+          let found = await serp.getStoreQuotes(`${query} ${item.name} new`.slice(0,300), item.model, 1);
+          if (!found.length) {
+            // Search punctuation is only a discovery hint. Product identity still
+            // requires the independent product snapshot and exact model match.
+            const alias = item.model.replace(/([A-Za-z])(?=\d)/g, '$1-');
+            const kind = item.name.trim().split(/\s+/).at(-1)?.toLowerCase() ?? '';
+            found = await serp.getStoreQuotes([item.brand,alias,kind,'new'].filter(Boolean).join(' ').slice(0,300), item.model, 3);
+          }
+          quotes.push(...found);
+        }
+      }
     }
     if (bright) {
       const rows = (await pool.query("SELECT DISTINCT product_url FROM product_offers WHERE user_id=(SELECT user_id FROM purchases WHERE id=$1) AND purchase_id=$1 AND source='BRIGHT_DATA' LIMIT 10", [purchase.id])).rows;
@@ -88,7 +101,7 @@ export function createPriceExecutor(pool: pg.Pool, config: IntegrationConfig, pr
           }
           const policy = (await client.query(`SELECT id,parsed_end_at FROM policies WHERE user_id=$1 AND purchase_id=$2 AND policy_type='RETURN' AND parsed_end_at>$3 ORDER BY parsed_end_at LIMIT 1`, [userId,purchase.id,now])).rows[0];
           if (offer.condition !== 'NEW' || offer.shippingCents === null || offer.inStock !== true) return;
-          const item = purchase.items.find(item => item.quantity === 1 && item.unitPriceCents !== null && item.model && offer.model && item.model.trim().toLowerCase() === offer.model.trim().toLowerCase());
+          const item = purchase.items.find(item => item.quantity === 1 && item.unitPriceCents !== null && item.model && offer.model && item.model.toUpperCase().replace(/[^A-Z0-9]/g,'') === offer.model.toUpperCase().replace(/[^A-Z0-9]/g,''));
           if (!item) return; // Cross-retailer SKUs alone are not product identity.
           const candidate = buildPriceDropOpportunity({ id:randomUUID(),purchase,item,offer,evidenceIds,maximumAgeMs:3_600_000,now:now.toISOString(),deadlineAt:policy ? new Date(policy.parsed_end_at).toISOString() : null });
           if (!candidate) return;

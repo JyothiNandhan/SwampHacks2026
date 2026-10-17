@@ -1,0 +1,17 @@
+{
+  "mode": "LIVE",
+  "execution": "LOCAL_PROVIDER_ORCHESTRATOR",
+  "syntheticPurchase": true,
+  "deployedWorkerVerified": false,
+  "observations": 6,
+  "verifiedOffers": [
+    {
+      "source": "BRIGHT_DATA",
+      "model": "F91W-1",
+      "priceCents": 2192,
+      "shippingCents": 699,
+      "shippingSource": "SERPAPI",
+      "observedAt": "2026-10-17T23:37:19.288Z"
+    }
+  ]
+}

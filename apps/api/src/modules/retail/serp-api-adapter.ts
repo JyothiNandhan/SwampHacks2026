@@ -21,8 +21,8 @@ export class SerpApiAdapter {
     }catch(error){if(error instanceof SerpApiError)throw error;throw new SerpApiError('SERPAPI_NETWORK_OR_RESPONSE_ERROR');}
   }
   /** Product-level quotes remain separate evidence; search titles alone never establish identity. */
-  async getStoreQuotes(query:string,model:string):Promise<StoreQuote[]> {
-    if(!query.trim()||query.length>300||!model.trim())throw new SerpApiError('SERPAPI_INVALID_QUERY');
+  async getStoreQuotes(query:string,model:string,maxCandidates=3):Promise<StoreQuote[]> {
+    if(!query.trim()||query.length>300||!model.trim()||!Number.isInteger(maxCandidates)||maxCandidates<1||maxCandidates>3)throw new SerpApiError('SERPAPI_INVALID_QUERY');
     const search=await this.request({engine:'google_shopping',q:query,gl:'us',hl:'en'});
     if(!Array.isArray(search.shopping_results))return [];
     const normalized=model.toUpperCase().replace(/[^A-Z0-9]/g,'');
@@ -30,7 +30,7 @@ export class SerpApiAdapter {
     const rank=(row:Record<string,unknown>)=>Number(/walmart|amazon/i.test(String(row.source)))*10+Number(String(row.title).toUpperCase().replace(/[^A-Z0-9]/g,'').includes(normalized));
     candidates.sort((a:Record<string,unknown>,b:Record<string,unknown>)=>rank(b)-rank(a));
     const quotes:StoreQuote[]=[];
-    for(const candidate of candidates.slice(0,3)){
+    for(const candidate of candidates.slice(0,maxCandidates)){
     const details=await this.request({engine:'google_product',page_token:candidate.immersive_product_page_token,gl:'us',hl:'en'});
     const product=details.product_results as {stores?:unknown[]}|undefined;
     if(!Array.isArray(product?.stores))continue;

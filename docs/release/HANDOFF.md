@@ -265,3 +265,13 @@ Nessie sandbox purchase creation uses `purchase_date` and explicit completed sta
 Its response field may be `transaction_date`; contradictory dates fail import.
 Read back amounts before matching: this sandbox rounded a fractional purchase down
 to whole dollars. Do not round expected refunds or fabricate deposit evidence.
+
+### Retail query follow-up
+
+A fresh deployed job at 79db2b0 succeeded but only saved five incomplete search
+observations. The tested follow-up adds a bounded shorter/punctuation query and
+normalizes exact model punctuation. Its local live-provider run returned one fully
+verified offer; deploy this follow-up before rerunning the worker. See VERIFICATION.md
+and the two explicitly labeled orchestrator/worker reports. The current Casio
+scenario expects USD 4.09, while Nessie documents integer deposit amounts; partial
+sandbox inflows must not be mislabeled as a fully confirmed refund.

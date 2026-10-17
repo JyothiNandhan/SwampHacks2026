@@ -2,7 +2,7 @@
 
 ## Current checks
 
-- `pnpm check`: version pins, contracts, workspace types, **177 tests** and backend builds passed. One optional PostgreSQL-driver test was skipped by this run.
+- `pnpm check`: version pins, contracts, workspace types, **178 tests** and backend builds passed. One optional PostgreSQL-driver test was skipped by this run.
 - Separate PostgreSQL 14.21 run: migrations 001/002, migration replay, database recovery and six backend integration tests passed (**7 tests**). CI uses PostgreSQL 16.10.
 - Synthetic regression evaluation: 15/15 expectations passed. No real-world OCR accuracy is claimed.
 - Docker is unavailable locally; no local image test is claimed.
@@ -31,3 +31,25 @@ Deploy the new retail integration on both Railway services before testing a pric
 The full live priced opportunity → approved case → correlated completed simulated deposit → confirmed refund remains unverified. Nessie rounded a USD 33.91 test purchase to USD 33; use read-back amounts and a compatible exact test scenario, never alter refund arithmetic to force confirmation. All bank tests are synthetic; no real money moved.
 
 Offline replay verifies the complete recovery path, partial allocations, unrelated-deposit rejection, ownership and idempotency. T22/T24 live sign-off and T25's final team demo/redacted Railway logs remain open. A Railway compute sandbox is unrelated to the Nessie banking sandbox and is not required for these checks.
+
+## Deployed retail follow-up
+
+The real Railway worker at `79db2b0` completed one fresh job on its first attempt,
+saving five price observations. It created no eligible offer or opportunity; this
+is a successful job transport check, not a completed priced recovery flow. See
+live-priced-worker-checks.json.
+
+The search query missed retailer quotes when the receipt used F91W-1 and repeated
+the product brand/name. A bounded fallback now tries model punctuation and a shorter
+product-kind query. Exact model matching normalizes punctuation consistently; it
+still requires independent product, price, stock, condition and shipping evidence.
+The updated local orchestrator passed against both live providers: six observations,
+one verified Walmart F91W-1 offer at 2,192 cents plus 699 cents shipping. See
+live-retail-orchestrator-checks.json. This local provider check writes no offers or
+refunds; deploy the follow-up fix before repeating the priced worker check.
+
+Nessie's official DepositCreate schema defines amount as an integer. The current
+33-dollar purchase versus 28.91-dollar delivered offer yields a 4.09-dollar expected
+refund. A whole-dollar deposit cannot fully confirm that amount. The application
+must retain the exact expected amount and leave any unmatched remainder pending.
+No deposit or completed live refund is claimed by this check.
