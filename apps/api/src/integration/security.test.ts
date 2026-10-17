@@ -26,7 +26,7 @@ test('rejects missing/invalid integration settings without leaking credentials',
     expect(()=>loadIntegrationConfig(value)).toThrow();try{loadIntegrationConfig(value);}catch(error){expect(String(error)).not.toContain('private-secret');}
   }
   expect(()=>loadIntegrationConfig({NODE_ENV:'production'})).toThrow('API_TOKENS_JSON');
-  expect(()=>loadIntegrationConfig({...env,NODE_ENV:'production',PRICE_MONITOR_MODE:'REPLAY'})).toThrow('Replay');
+  expect(()=>loadIntegrationConfig({...env,NODE_ENV:'production',PRICE_MONITOR_MODE:'REPLAY'})).toThrow('PRICE_MONITOR_MODE');
 });
 test('rate limiter enforces a window and recovers after expiry',()=>{
   const limiter=new RequestLimiter();for(let n=0;n<60;n++)limiter.consume('user',0);

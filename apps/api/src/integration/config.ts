@@ -1,3 +1,4 @@
+import { ConfigurationError } from '../configuration-error.js';
 import { z } from 'zod';
 import { credentialSchema } from './security.js';
 const optional = z.preprocess(v => v === '' ? undefined : v, z.string().trim().min(1).optional());
@@ -18,10 +19,10 @@ const schema = z.object({
 export type IntegrationConfig = z.output<typeof schema>;
 export function loadIntegrationConfig(env: NodeJS.ProcessEnv): IntegrationConfig {
   const result = schema.safeParse(env);
-  if (!result.success) throw new Error(`Invalid integration configuration: ${[...new Set(result.error.issues.map(i => i.path.join('.')))].join(', ')}`);
+  if (!result.success) throw new ConfigurationError('integration', result.error.issues.map(i => i.path.join('.')));
   if (env.NODE_ENV === 'production' && (!result.data.API_TOKENS_JSON.length || !result.data.INTERNAL_WORKER_TOKEN)) {
-    throw new Error('Invalid integration configuration: API_TOKENS_JSON, INTERNAL_WORKER_TOKEN');
+    throw new ConfigurationError('integration', [...(!result.data.API_TOKENS_JSON.length ? ['API_TOKENS_JSON'] : []), ...(!result.data.INTERNAL_WORKER_TOKEN ? ['INTERNAL_WORKER_TOKEN'] : [])]);
   }
-  if (env.NODE_ENV === 'production' && result.data.PRICE_MONITOR_MODE === 'REPLAY') throw new Error('Replay is restricted to non-production environments');
+  if (env.NODE_ENV === 'production' && result.data.PRICE_MONITOR_MODE === 'REPLAY') throw new ConfigurationError('integration', ['PRICE_MONITOR_MODE']);
   return result.data;
 }

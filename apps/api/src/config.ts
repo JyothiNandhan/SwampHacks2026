@@ -1,3 +1,4 @@
+import { ConfigurationError } from './configuration-error.js';
 import { loadIntegrationConfig, type IntegrationConfig } from './integration/config.js';
 import { z } from 'zod';
 
@@ -38,7 +39,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (!result.success) {
     // Never retain Zod issues: they can include user-supplied secrets/connection strings.
     const fields = [...new Set(result.error.issues.map(issue => issue.path.join('.')))];
-    throw new Error(`Invalid environment configuration: ${fields.join(', ')}`);
+    throw new ConfigurationError('environment', fields);
   }
   const value = result.data;
   return Object.freeze({
