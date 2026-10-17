@@ -221,3 +221,24 @@ validation error. These records have not been represented as a successful purcha
 import. Resolve provider behavior or obtain a valid sandbox purchase before marking
 the live Nessie release check passed. The current verified API origin is
 `https://prod-api.nessieisreal.com`; remove any old Railway NESSIE_BASE_URL override.
+
+### Provider verification — 2026-10-17
+
+A live Gemini extraction using `gemini-3.8-flash` passed on a clearly labeled
+synthetic email receipt: extracted status, USD 300.00 total, DW-1 model and no
+warnings. This was a direct provider check, not a deployed upload/persistence test.
+The configured `gemini-2.5-flash` returned HTTP 404 indicating it is unavailable to
+new users. Set Railway API `GEMINI_MODEL=gemini-3.8-flash` before the receipt check.
+
+Bright Data authentication, collection, polling and snapshot download returned HTTP
+200 using the Amazon product scraper. The documentation example returned
+`dead_page`; a second product returned product details without a current price.
+The adapter correctly rejected these as invalid offers. No verified price, savings
+or retailer integration pass is claimed. Obtain a product with a current priced
+offer before closing this check. Best Buy remains unverified without its API key.
+
+The API was still serving `database-diagnostics-v1` at verification time. Deploy
+commit `a9c019d` or later to both services before running the worker/document checks.
+Receipt persistence requires a successful upload followed by a second API instance
+and an identical checksum. Both this check and the full live Nessie-to-simulated-
+refund flow remain pending.
