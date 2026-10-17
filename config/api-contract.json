@@ -1,0 +1,22 @@
+{
+  "apiBasePath": "/api/v1",
+  "jsonNaming": "camelCase",
+  "databaseNaming": "snake_case",
+  "money": "integer cents; USD",
+  "datetime": "ISO 8601 UTC/offset",
+  "responseCollection": {
+    "data": [],
+    "nextCursor": null
+  },
+  "errors": {
+    "error": {
+      "code": "STRING_CODE",
+      "message": "Human readable",
+      "requestId": "req-..."
+    }
+  },
+  "routes": [],
+  "responseSingle": {
+    "data": {}
+  }
+}
