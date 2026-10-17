@@ -1,0 +1,11 @@
+{
+  "id": "transaction-1",
+  "nessiePurchaseId": "nessie-purchase-1",
+  "accountId": "account-1",
+  "merchantId": null,
+  "merchantName": "Demo Retailer",
+  "amountCents": 30000,
+  "currency": "USD",
+  "occurredAt": "2026-10-17T12:00:00Z",
+  "receiptStatus": "MATCHED"
+}

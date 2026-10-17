@@ -9,6 +9,20 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16.10
+        env:
+          POSTGRES_USER: moneyback
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: moneyback_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U moneyback -d moneyback_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,3 +35,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Contracts, types, database tests and builds
         run: pnpm check
+      - name: Verify migrations with PostgreSQL driver
+        env:
+          TEST_DATABASE_URL: postgres://moneyback:ci-only-password@localhost:5432/moneyback_test
+        run: pnpm --filter @moneyback/db exec tsx src/postgres-check.ts

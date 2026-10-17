@@ -54,3 +54,14 @@ For PowerShell without bash, run equivalent commands: `node scripts/check-versio
 - An extension production bundle/package step still needs implementation before loading unpacked; the provided stub simply checks TypeScript syntax.
 - Vercel hosts only the website. Railway serves secured API/monitoring workers.
 
+## Foundation verification (T01–T03)
+
+The lockfile is now committed. `pnpm install --frozen-lockfile` is the reproducible team installation path. `pnpm check` validates pins and fixtures, typechecks workspaces, runs contract/API/embedded PostgreSQL tests, and compiles shared contracts plus API/worker. `pnpm dev:api` builds the shared contract package before starting the API; `pnpm build` prepares compiled backend output. Frontend implementation remains deferred.
+
+Database tests run without Docker or external credentials using pinned PGlite. GitHub CI also applies and replays the migration through `pg` against PostgreSQL 16.10. To migrate Tiger Data, explicitly export the provider's TLS `DATABASE_URL`, then run `pnpm db:migrate`; see `packages/db/README.md`. No live provider secrets are needed for foundation tests.
+
+## VS Code TypeScript diagnostics
+
+The workspace points VS Code to the pinned TypeScript installation in `node_modules/typescript/lib`. After opening the repository root, accept **Use Workspace Version** if prompted. You can also run **TypeScript: Select TypeScript Version → Use Workspace Version** from the Command Palette. This keeps editor diagnostics aligned with `pnpm check` instead of the editor's bundled compiler.
+
+If a `tsconfig.json` shows a missing `node` type-definition error, first run `bash scripts/team-setup.sh` with the pinned Node/pnpm versions; dependencies are not committed. Then run **TypeScript: Restart TS Server**. To verify configs directly, run `pnpm -r --if-present typecheck` from the repository root. If a diagnostic remains after those steps, capture its exact text and affected workspace path; a red filename alone does not identify the cause.

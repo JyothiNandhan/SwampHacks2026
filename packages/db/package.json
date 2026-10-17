@@ -13,7 +13,10 @@
     "@electric-sql/pglite": "catalog:"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate:check": "tsx src/check.ts",
+    "migrate": "tsx src/cli.ts",
+    "test": "vitest run"
   },
   "main": "./src/index.ts",
   "types": "./src/index.ts",

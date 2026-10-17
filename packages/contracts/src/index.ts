@@ -74,3 +74,93 @@ export type ProductOffer = z.infer<typeof ProductOfferSchema>;
 export type Opportunity = z.infer<typeof OpportunitySchema>;
 export type RecoveryCase = z.infer<typeof RecoveryCaseSchema>;
 
+export const CONTRACT_VERSION = '1.0.0' as const;
+export const EvidenceSchema = z.object({
+  id: Id, sourceType: z.enum(['RECEIPT', 'TRANSACTION', 'OFFER', 'POLICY', 'USER']),
+  sourceId: Id, category: z.string().min(1), acquisitionMethod: z.string().min(1),
+  rawUrl: HttpUrl.nullable(), checksum: z.string().nullable(), createdAt: IsoDateTime
+}).strict();
+export const PolicySchema = z.object({
+  id: Id, purchaseId: Id.nullable(),
+  policyType: z.enum(['WARRANTY', 'RETURN', 'RENTAL', 'TEXTBOOK', 'GIFTCARD', 'SUBSCRIPTION']),
+  sourceName: z.string().min(1), sourceUrl: HttpUrl.nullable(), evidenceIds: z.array(Id).min(1),
+  rawTerms: z.record(z.string(), z.unknown()), exclusions: z.array(z.string()),
+  eligibility: z.enum(['VERIFIED', 'REVIEW_REQUIRED', 'INELIGIBLE']),
+  parsedStartAt: IsoDateTime.nullable(), parsedEndAt: IsoDateTime.nullable()
+}).strict();
+export const RefundSchema = z.object({
+  id: Id, caseId: Id, depositId: Id.nullable(), expectedAmountCents: Cents,
+  confirmedAmountCents: Cents.nullable(),
+  status: z.enum(['PENDING', 'MATCHED', 'REJECTED', 'CONFIRMED']),
+  simulated: z.literal(true), evidenceIds: z.array(Id),
+  expectedAt: IsoDateTime.nullable(), createdAt: IsoDateTime, updatedAt: IsoDateTime
+}).strict().superRefine((refund, ctx) => {
+  if ((refund.status === 'MATCHED' || refund.status === 'CONFIRMED') &&
+      (!refund.depositId || refund.confirmedAmountCents === null || !refund.evidenceIds.length)) {
+    ctx.addIssue({ code: 'custom', message: 'Matched refunds require a deposit, amount and evidence' });
+  }
+});
+export const EventSchema = z.object({
+  id: Id, entityType: z.string().min(1), entityId: Id.nullable(),
+  eventType: z.string().min(1), eventPayload: z.record(z.string(), z.unknown()), createdAt: IsoDateTime
+}).strict();
+export const SubscriptionSchema = z.object({
+  id: Id, accountId: Id.nullable(), merchantName: z.string().min(1), planName: z.string().nullable(),
+  amountCents: Cents, currency: Currency, billingCycle: z.enum(['MONTHLY', 'YEARLY', 'WEEKLY', 'ONE_TIME']),
+  startedAt: IsoDateTime, nextBillingAt: IsoDateTime.nullable()
+}).strict();
+export const DeadlineSchema = z.object({
+  id: Id, purchaseId: Id, policyId: Id, type: z.enum(['RETURN', 'WARRANTY', 'RENTAL', 'TEXTBOOK', 'GIFT_CARD']),
+  deadlineAt: IsoDateTime, evidenceIds: z.array(Id).min(1)
+}).strict();
+export const JobSchema = z.object({
+  id: Id, jobType: z.enum(['NESSIE_IMPORT', 'PRICE_MONITOR', 'RECEIPT_MATCH', 'POLICY_SCAN', 'REFUND_RECONCILE']),
+  status: z.enum(['QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'RETRYING']),
+  createdAt: IsoDateTime, updatedAt: IsoDateTime
+}).strict();
+export const ReceiptGroupSchema = z.object({ receiptIds: z.array(Id).min(1), canonicalReceiptId: Id }).strict();
+export const BillingComparisonSchema = z.object({
+  purchaseId: Id, differenceCents: Cents, evidenceIds: z.array(Id),
+  eligibility: OpportunitySchema.shape.eligibility
+}).strict();
+export const ReceiptIngestRequestSchema = z.object({ source: ReceiptSourceSchema, originalFileId: Id }).strict();
+export const ReceiptMatchRequestSchema = z.object({ receiptId: Id, transactionIds: z.array(Id).min(1) }).strict();
+export const ReceiptConsolidateRequestSchema = z.object({ receiptIds: z.array(Id).min(2) }).strict();
+export const PolicyExtractRequestSchema = z.object({ purchaseId: Id, evidenceIds: z.array(Id).min(1) }).strict();
+export const BillingCompareRequestSchema = PolicyExtractRequestSchema;
+export const RecoveryCaseRequestSchema = z.object({ opportunityId: Id }).strict();
+export const ApprovalRequestSchema = z.object({ approved: z.literal(true) }).strict();
+export const RefundReconcileRequestSchema = z.object({ caseId: Id, depositIds: z.array(Id) }).strict();
+export const SyncRequestSchema = z.object({ accountId: Id }).strict();
+export const MonitorRequestSchema = z.object({ purchaseIds: z.array(Id).min(1) }).strict();
+export const HealthSchema = z.object({ status: z.literal('ok'), service: z.literal('moneyback-api') }).strict();
+export const ResponseSchema = <T extends z.ZodType>(data: T) => z.object({ data }).strict();
+
+/** Route registry refers to these runtime validators by name. */
+export const HttpSchemas = {
+  Health: HealthSchema, PurchasePage: PageSchema(PurchaseSchema), EventPage: PageSchema(EventSchema),
+  OfferPage: PageSchema(ProductOfferSchema), OpportunityPage: PageSchema(OpportunitySchema),
+  SubscriptionPage: PageSchema(SubscriptionSchema), NotificationPage: PageSchema(NotificationSchema),
+  DeadlinePage: PageSchema(DeadlineSchema), ReceiptResponse: ResponseSchema(ReceiptSchema),
+  MatchResponse: ResponseSchema(z.array(MatchCandidateSchema)), ReceiptGroupResponse: ResponseSchema(ReceiptGroupSchema),
+  PolicyResponse: ResponseSchema(PolicySchema), BillingResponse: ResponseSchema(BillingComparisonSchema),
+  CaseResponse: ResponseSchema(RecoveryCaseSchema), RefundResponse: ResponseSchema(z.array(RefundSchema)),
+  JobResponse: ResponseSchema(JobSchema), ReceiptIngestRequest: ReceiptIngestRequestSchema,
+  ReceiptMatchRequest: ReceiptMatchRequestSchema, ReceiptConsolidateRequest: ReceiptConsolidateRequestSchema,
+  PolicyExtractRequest: PolicyExtractRequestSchema, BillingCompareRequest: BillingCompareRequestSchema,
+  RecoveryCaseRequest: RecoveryCaseRequestSchema, ApprovalRequest: ApprovalRequestSchema,
+  RefundReconcileRequest: RefundReconcileRequestSchema, SyncRequest: SyncRequestSchema,
+  MonitorRequest: MonitorRequestSchema, Error: ErrorSchema
+} as const;
+
+export type ReceiptItem = z.infer<typeof ReceiptItemSchema>;
+export type ReceiptExtraction = z.infer<typeof ReceiptExtractionSchema>;
+export type MatchCandidate = z.infer<typeof MatchCandidateSchema>;
+export type Policy = z.infer<typeof PolicySchema>;
+export type Evidence = z.infer<typeof EvidenceSchema>;
+export type Refund = z.infer<typeof RefundSchema>;
+export type Event = z.infer<typeof EventSchema>;
+export type Notification = z.infer<typeof NotificationSchema>;
+export type Subscription = z.infer<typeof SubscriptionSchema>;
+export type Deadline = z.infer<typeof DeadlineSchema>;
+export type Job = z.infer<typeof JobSchema>;

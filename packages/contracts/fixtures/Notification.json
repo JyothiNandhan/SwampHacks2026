@@ -1,0 +1,9 @@
+{
+  "id": "notification-1",
+  "opportunityId": "opportunity-1",
+  "type": "PRICE_DROP",
+  "title": "Demo price observation",
+  "message": "Synthetic replay; review terms before proceeding.",
+  "createdAt": "2026-10-17T12:00:00Z",
+  "readAt": null
+}

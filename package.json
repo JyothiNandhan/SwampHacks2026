@@ -14,7 +14,8 @@
     "dev:worker": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/worker dev",
     "init:lock": "pnpm install --lockfile-only",
     "check:contracts": "node scripts/check-contracts.mjs",
-    "build": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/api build && pnpm --filter @moneyback/worker build"
+    "build": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/api build && pnpm --filter @moneyback/worker build",
+    "db:migrate": "pnpm --filter @moneyback/db migrate"
   },
   "devDependencies": {
     "typescript": "catalog:",

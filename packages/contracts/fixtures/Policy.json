@@ -1,0 +1,17 @@
+{
+  "id": "policy-1",
+  "purchaseId": "purchase-1",
+  "policyType": "RETURN",
+  "sourceName": "Synthetic demo terms",
+  "sourceUrl": "https://example.com/demo-terms",
+  "evidenceIds": [
+    "evidence-1"
+  ],
+  "rawTerms": {
+    "text": "Synthetic terms require manual review."
+  },
+  "exclusions": [],
+  "eligibility": "REVIEW_REQUIRED",
+  "parsedStartAt": "2026-10-17T12:00:00Z",
+  "parsedEndAt": "2026-11-01T12:00:00Z"
+}

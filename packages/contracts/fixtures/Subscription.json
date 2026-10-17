@@ -1,0 +1,11 @@
+{
+  "id": "subscription-1",
+  "accountId": "account-1",
+  "merchantName": "Demo Subscription",
+  "planName": null,
+  "amountCents": 999,
+  "currency": "USD",
+  "billingCycle": "MONTHLY",
+  "startedAt": "2026-10-17T12:00:00Z",
+  "nextBillingAt": "2026-11-17T12:00:00Z"
+}

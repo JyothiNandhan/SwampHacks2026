@@ -1,0 +1,11 @@
+{
+  "transactionId": "transaction-1",
+  "receiptId": "receipt-1",
+  "score": 95,
+  "matchedFields": [
+    "MERCHANT",
+    "AMOUNT",
+    "DATE"
+  ],
+  "status": "PROPOSED"
+}

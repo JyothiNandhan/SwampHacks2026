@@ -1,2 +1,28 @@
-// Database migrations are delivered in T03.
-export {};
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export interface TigerDataMigration {
+  id: string;
+  name: string;
+  description: string;
+  sql: string;
+}
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
+const migrationSql = readFileSync(
+  resolve(currentDir, 'migrations/001_init_tiger_data.sql'),
+  'utf8',
+);
+
+export const tigerDataMigrations: TigerDataMigration[] = [
+  {
+    id: '001_init_tiger_data',
+    name: '001_init_tiger_data',
+    description:
+      'Create the canonical MoneyBack OS schema for users, bank accounts, purchase data, evidence, offers, policies, cases, refunds, subscriptions, jobs and events.',
+    sql: migrationSql,
+  },
+];
+
+export const tigerDataMigrationOrder = tigerDataMigrations.map((migration) => migration.id);

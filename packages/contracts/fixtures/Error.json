@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid request",
+    "requestId": "req-demo-1"
+  }
+}

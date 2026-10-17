@@ -1,0 +1,7 @@
+{
+  "id": "job-1",
+  "jobType": "PRICE_MONITOR",
+  "status": "QUEUED",
+  "createdAt": "2026-10-17T12:00:00Z",
+  "updatedAt": "2026-10-17T12:00:00Z"
+}
