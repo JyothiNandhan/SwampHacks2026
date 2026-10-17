@@ -1,3 +1,4 @@
+import { startupFailureMessage } from './configuration-error.js';
 import { buildApp } from './app.js';
 import { loadConfig } from './config.js';
 
@@ -21,8 +22,8 @@ async function start() {
     await shutdown();
   }
 }
-start().catch(() => {
-  // Invalid configuration can contain credentials: never print the original error.
-  console.error('API startup failed. Check environment configuration.');
+start().catch(error => {
+  // Print setting names only for our explicitly safe configuration errors.
+  console.error(startupFailureMessage(error));
   process.exitCode = 1;
 });
