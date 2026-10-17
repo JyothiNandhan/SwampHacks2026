@@ -5,7 +5,10 @@
 ## What we are building
 An autonomous post-purchase recovery service. A Nessie purchase is reconciled to an email/photo receipt, mapped to an exact item, monitored against Best Buy and Bright Data offers, evaluated against return terms, turned into a user-approved recovery case, and optionally reconciled to a *simulated* incoming Nessie deposit. Additional capabilities include refunds, subscriptions, charges, warranties, paper-receipt deduplication, and textbook / gift-card / rental deadlines. No chatbot is required for the core workflow.
 
-## Decision: modular ownership, not feature-per-person
+## Gate 3 and later ownership
+
+Nandhan implemented and tested D01 and T07–T19. The table below describes ownership
+for the remaining Gate 3 and later integration work.
 | Member | Owned code | Accountable deliverables |
 |---|---|---|
 | **Rishav** | `apps/api/src/modules/banking/`, `apps/api/src/modules/subscriptions/`, `apps/api/src/server.ts`, `packages/db/`, `packages/contracts/`, CI/repo setup | Nessie purchases/bills/deposits, Tiger Data schema, server/integration, subscription changes |
@@ -33,7 +36,7 @@ An autonomous post-purchase recovery service. A Nessie purchase is reconciled to
 | **T01** | Rishav | Commit common config, workspaces, CI, backend skeleton, dev commands, exact versions; generate and commit `pnpm-lock.yaml` on internet-connected laptop | START | Others can prepare notes/fixtures offline |
 | **T02** | Rishav | Freeze `packages/contracts`: purchase, receipt, item, offer, policy, opportunity, refund, event schemas and HTTP response/error structures; add sample JSON fixtures | T01 | Other members review drafts |
 | **T03** | Rishav | Tiger Data migrations: users, accounts, transactions, receipts, orders/items, evidence, policies, offers/time series, cases, refunds, subscriptions, jobs/events | T02 | AI/retail modules develop against JSON fixtures |
-| **D01** | Rishav + team | Establish `apps/deepspace`: pinned DeepSpace SDK, Vite/React client, Hono Worker, shared app identity, authentication boundary, health view and synthetic real-time notification fixture; no production financial data | START | Yes; must not block T01–T11 |
+| **D01** | Nandhan | Establish `apps/deepspace`: pinned DeepSpace SDK, Vite/React client, Hono Worker, shared app identity, authentication boundary, health view and synthetic real-time notification fixture; no production financial data | START | Yes; must not block T01–T11 |
 
 ### Gate 1 — Independent modules (parallel after T02)
 | ID | Owner | Exact task and acceptance | Wait for merge | Parallel? |
@@ -41,29 +44,29 @@ An autonomous post-purchase recovery service. A Nessie purchase is reconciled to
 | **T04** | Rishav | Fastify server, `/health`, typed config, database pool, Nessie GET client and error tests | T02 | Yes |
 | **T05** | Anish | Gemini extractor for photographed/emailed receipts (merchant/date/total/items/model), validated JSON plus raw evidence; fixture-based tests | T02 | Yes |
 | **T06** | Nandhan | Best Buy product search/SKU adapter; normalize product offer, validate link and timestamp, test with mocked API | T02 | Yes |
-| **T07** | Rishithaaa | Recovery case state machine (`DETECTED→REVIEW→APPROVED→SUBMITTED→PENDING→CONFIRMED/REJECTED/EXPIRED`); no agent-driven auto-submission | T02 | Yes |
-| **T08** | Rishav | Nessie customers/accounts/purchases/merchants/bills/deposits import; idempotent upserts into Tiger Data | T03 + T04 | Yes with T09–T11 |
-| **T09** | Anish | Match extracted receipts to Nessie-format fixture payments; detect duplicate paper scans/emails; retain originals and flag paper-keep warnings | T05 | Yes, integration to real bank waits T08 |
+| **T07** | Nandhan | Recovery case state machine (`DETECTED→REVIEW→APPROVED→SUBMITTED→PENDING→CONFIRMED/REJECTED/EXPIRED`); no agent-driven auto-submission | T02 | Yes |
+| **T08** | Nandhan | Nessie customers/accounts/purchases/merchants/bills/deposits import; idempotent upserts into Tiger Data | T03 + T04 | Yes with T09–T11 |
+| **T09** | Nandhan | Match extracted receipts to Nessie-format fixture payments; detect duplicate paper scans/emails; retain originals and flag paper-keep warnings | T05 | Yes, integration to real bank waits T08 |
 | **T10** | Nandhan | Bright Data scraper adapter (`datasets/v3` with configured dataset per retailer), asynchronous snapshot polling and normalized offers | T06 | Yes |
-| **T11** | Rishithaaa | Evidence-backed recovery recommendation, action drafting, approval audit, notification record model | T07 | Yes |
+| **T11** | Nandhan | Evidence-backed recovery recommendation, action drafting, approval audit, notification record model | T07 | Yes |
 
 ### Gate 2 — Functional integration
 | ID | Owner | Exact task and acceptance | Wait for merge | Parallel? |
 |---|---|---|---|---|
-| **T12** | Rishav | Wire real purchase imports to Anish matcher, persist normalized orders/items and evidence | T08 + T09 | Other integrations continue |
-| **T13** | Anish | Parse return/warranty terms incl. dates and exclusions, preserve citation/evidence, conservative retention categorization | T05 | Yes |
+| **T12** | Nandhan | Wire real purchase imports to the receipt matcher, persist normalized orders/items and evidence | T08 + T09 | Other integrations continue |
+| **T13** | Nandhan | Parse return/warranty terms incl. dates and exclusions, preserve citation/evidence, conservative retention categorization | T05 | Yes |
 | **T14** | Nandhan | Exact-product comparison, offer freshness, price history, arithmetic net savings & deduplicated price-drop opportunities | T10 + T03 | Yes; policy gating waits T13 |
-| **T15** | Rishithaaa | Refund expectation + partial/late/missing refund reconciliation against Nessie-format deposit fixtures; reject unrelated equal-amount deposits | T11 | Yes; live Nessie awaits T08 |
-| **T16** | Rishav | Subscription price-change service from Nessie bill/purchase history; alert only on supported changes | T08 | Yes |
-| **T17** | Anish | Compare rental agreement to final bill, detect changed lines and unverified fees; tests | T13 | Yes |
-| **T18** | Rishithaaa | Timeline/events, textbook due dates, rental return time, gift-card terms; notifications and source evidence | T11 + T13 | Yes |
+| **T15** | Nandhan | Refund expectation + partial/late/missing refund reconciliation against Nessie-format deposit fixtures; reject unrelated equal-amount deposits | T11 | Yes; live Nessie awaits T08 |
+| **T16** | Nandhan | Subscription price-change service from Nessie bill/purchase history; alert only on supported changes | T08 | Yes |
+| **T17** | Nandhan | Compare rental agreement to final bill, detect changed lines and unverified fees; tests | T13 | Yes |
+| **T18** | Nandhan | Timeline/events, textbook due dates, rental return time, gift-card terms; notifications and source evidence | T11 + T13 | Yes |
 | **T19** | Nandhan | Railway price/monitor worker; scheduled jobs and manual **authenticated demo trigger**, retry/backoff, idempotency | T14 | Yes |
 
 ### Gate 3 — End-to-end APIs and release
 | ID | Owner | Exact task and acceptance | Wait for merge | Parallel? |
 |---|---|---|---|---|
 | **T20** | Rishav | Register module routes; secure auth middleware, authz and env validation; expose OpenAPI docs; deploy backend to Railway | T12 + T14 + T15 + T16 + T17 + T18 | Can prep deployment early; live wiring WAIT |
-| **T21** | Nandhan | Connect worker to live purchase/policy/case services; Best Buy & Bright Data integration tests, monitor replay | T19 + T20 | Wait for integration |
+| **T21** | To be assigned | Connect worker to live purchase/policy/case services; Best Buy & Bright Data integration tests, monitor replay | T19 + T20 | Wait for integration |
 | **T22** | Rishithaaa | Connect recovery cases to real Nessie deposits and confirm *simulated* reimbursements only when evidence matches | T15 + T20 | Wait for integration |
 | **T23** | Anish | Evaluate receipt/duplicate/policy matching, including ambiguous/incorrect papers; publish measured test outcomes | T09 + T13 + T17 | Yes |
 | **T24** | Rishav | CI smoke tests: Nessie → receipt → priced item → opportunity → approved case → simulated refund; deploy stable Railway API | T20 + T21 + T22 + T23 | Release gate |
@@ -77,14 +80,14 @@ An autonomous post-purchase recovery service. A Nessie purchase is reconciled to
 |---|---|---|
 | **T04** | Complete and merged to `main` (`e7caed9`) | T08 may consume it after its remaining prerequisites are confirmed |
 | **T05** | Complete and merged to `main` through PR #4 | T09 may proceed |
-| **T06** | Implemented and pushed on `Nandhan` (`0c7a21f`), not merged | Create a clean feature PR containing the retail adapter commit only |
-| **T07** | No implementation visible on fetched GitHub branches | Rishithaaa must push a tested feature branch and open a PR |
-| **T08** | No implementation visible on fetched GitHub branches | Rishav implements Nessie import and Tiger Data idempotent persistence |
-| **T09** | No implementation beyond T05 visible on fetched GitHub branches | Anish implements matching and duplicate detection |
-| **T10** | Implemented and pushed on `Nandhan` (`0c7a21f`), not merged | Merge with T06 through a clean reviewed PR; live dataset credentials remain deployment configuration |
-| **T11** | No implementation visible on fetched GitHub branches | Begin after T07 is merged |
+| **T06** | Implemented and tested by Nandhan | Included in the contribution series targeting `main` |
+| **T07** | Implemented and tested by Nandhan | Included in the Gate 1 contribution series |
+| **T08** | Implemented and tested by Nandhan | Included in the Gate 1 contribution series |
+| **T09** | Implemented and tested by Nandhan | Included in the Gate 1 contribution series |
+| **T10** | Implemented and tested by Nandhan | Included in the contribution series targeting `main`; live dataset credentials remain deployment configuration |
+| **T11** | Implemented and tested by Nandhan | Included in the Gate 1 contribution series |
 
-“No implementation visible” means no qualifying commit was present on the fetched remote branches; a teammate may still have unpushed local work.
+Gate 3 remains assigned to the contributors listed in the task table above.
 
 ## Feature ownership (multiple modules make one feature)
 | Feature | Primary coordinator | Others required |

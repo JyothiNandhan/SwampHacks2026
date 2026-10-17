@@ -6,6 +6,8 @@
 Build a backend-first, autonomous post-purchase financial recovery prototype for SwampHacks XII / Capital One Nessie. Users' *simulated* bank transactions are reconciled to authorized email receipts or photographed paper receipts. Product identity and purchase conditions are extracted, offers monitored, recoveries estimated, requests prepared for explicit user approval, and matching test refunds reconciled. Additional recurring fees, car-rental invoice variances, warranties and textbook/gift-card/rental deadlines reuse the same services. Not a generic chatbot.
 
 ## Team roles
+- **Completed contribution note:** Nandhan implemented and tested T07–T19. The role
+  assignments below continue to apply to Gate 3 and later integration work.
 - **Rishav:** repo/toolchain freeze, API/server, Nessie, Tiger Data, migrations, subscriptions, final integration.
 - **Anish:** Gemini receipt extraction incl camera uploads, duplicate physical/digital receipts, matching, return/warranty terms, billing/overcharge analysis.
 - **Rishithaaa:** recovery cases, missing refund matching, timeline, notifications, textbook/gift-card/car-rental deadlines.

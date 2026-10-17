@@ -3,6 +3,8 @@
 Upload `TEAM_GPT_CONTEXT.md`, this file, `config/naming-conventions.md`, `config/api-contract.json` and `packages/contracts/src/index.ts` to every GPT chat. Use current GitHub `main` as the final authority.
 
 ## Ownership
+- Nandhan implemented and tested T07–T19 for the Gate 1/Gate 2 delivery. Gate 3 work
+  remains assigned to the contributors listed in `TASK_TRACKER.csv`.
 - Rishav: shared contracts, database, Nessie, deployment, API route integration.
 - Anish: documents, Gemini, policy extraction, receipt matching.
 - Nandhan: Best Buy/Bright Data/price workers; later browser extension.
