@@ -19,3 +19,14 @@ test('provider and network errors never expose secrets or raw response bodies',a
  const adapter=new SerpApiAdapter({apiKey:'secret',fetchImpl:vi.fn<typeof fetch>().mockRejectedValue(new Error('https://serpapi.com/?api_key=secret'))});
  await expect(adapter.searchOffers('Watch')).rejects.toThrow('SERPAPI_NETWORK_OR_RESPONSE_ERROR');
 });
+
+test('product-level quotes require explicit USD shipping, stock, and a supported retailer URL',async()=>{
+ const fetchImpl=vi.fn<typeof fetch>().mockResolvedValueOnce(Response.json({shopping_results:[{title:'Casio F91W-1',immersive_product_page_token:'token'}]})).mockResolvedValueOnce(Response.json({product_results:{stores:[
+  {name:'Walmart',link:'https://www.walmart.com/ip/192953947',price:'$21.92',extracted_price:21.92,shipping:'+ $6.99',shipping_extracted:6.99,details_and_offers:['In stock online']},
+  {name:'Walmart',link:'https://www.walmart.com/ip/999',price:'$21.92',extracted_price:21.92,shipping:'Free on orders over $35',details_and_offers:['In stock online']},
+  {name:'Untrusted',link:'https://untrusted.example/item',price:'$21.92',extracted_price:21.92,shipping:'Free',details_and_offers:['In stock online']}
+ ]}}));
+ const quotes=await new SerpApiAdapter({apiKey:'fixture',fetchImpl}).getStoreQuotes('Casio F91W-1','F91W-1');
+ expect(quotes).toHaveLength(1);expect(quotes[0]).toMatchObject({source:'SERPAPI',priceCents:2192,shippingCents:699,inStock:true});
+ expect(new URL(String(fetchImpl.mock.calls[1][0])).searchParams.get('engine')).toBe('google_product');
+});

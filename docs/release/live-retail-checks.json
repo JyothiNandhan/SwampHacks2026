@@ -1,0 +1,17 @@
+{
+  "mode": "LIVE",
+  "productProvider": "BRIGHT_DATA",
+  "shippingProvider": "SERPAPI",
+  "retailer": "Walmart",
+  "model": "F91W-1",
+  "condition": "NEW",
+  "inStock": true,
+  "priceCents": 2192,
+  "shippingCents": 699,
+  "currency": "USD",
+  "sameRetailerProductId": true,
+  "observedAt": "2026-10-17T23:19:04.250Z",
+  "productObservedAt": "2026-10-17T23:11:36.105Z",
+  "deployedPricedWorkerVerified": false,
+  "simulatedRefundVerified": false
+}

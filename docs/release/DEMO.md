@@ -6,7 +6,8 @@
 - Clean Nessie sandbox completed purchase creation and deployed transaction import.
 - Worker connectivity (synthetic itemless probe; no retailer or savings claim).
 - Private receipt upload, live Gemini extraction and unchanged file checksum after redeployment.
-- SerpApi returns priced observations; unknown identity/stock/shipping block automatic savings.
+- Gemini 3.5 Flash passed 3/3 live synthetic email checks; the imported bank transaction matched its receipt.
+- Direct Bright Data product and SerpApi shipping evidence agree on a Walmart product and price. The updated deployed priced worker remains unverified.
 - Offline receipt-to-simulated-refund integration passes against actual PostgreSQL.
 
 ## 1. Safe deployed walkthrough

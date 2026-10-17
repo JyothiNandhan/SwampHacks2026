@@ -184,16 +184,33 @@ export class BrightDataAdapter {
     const result = ProductOfferSchema.safeParse({
       id: `bright-data:${snapshotId}:${index}`, source: 'BRIGHT_DATA',
       retailerName: retailer === 'amazon' ? 'Amazon' : 'Walmart', productName,
-      sku, model: firstString(record, ['model', 'model_number']),
+      sku, model: exactModel(record),
       gtin: firstString(record, ['gtin', 'upc', 'ean']), condition: parseCondition(record.condition),
       priceCents: priceToCents(firstValue(record, ['final_price', 'price', 'current_price'])),
       shippingCents: optionalPriceToCents(firstValue(record, ['shipping_price', 'shipping_cost'])),
-      currency: 'USD', inStock: parseAvailability(firstValue(record, ['in_stock', 'availability', 'stock_status'])),
+      currency: 'USD', inStock: availableOnline(record),
       productUrl, observedAt
     });
     if (!result.success) throw new BrightDataApiError('BRIGHT_DATA_INVALID_RESPONSE');
     return result.data;
   }
+}
+
+function exactModel(record: Record<string, unknown>): string | null {
+  const values = [firstString(record, ['model']), firstString(record, ['model_number']), firstString(record, ['mpn'])];
+  const identifiers = record.product_identifiers;
+  if (identifiers && typeof identifiers === 'object' && !Array.isArray(identifiers)) values.push(firstString(identifiers as Record<string, unknown>, ['model']));
+  if (Array.isArray(record.specifications)) for (const entry of record.specifications) {
+    if (entry && typeof entry === 'object' && ['model','model number','manufacturer part number'].includes(String(entry.name).trim().toLowerCase())) values.push(firstString(entry, ['value']));
+  }
+  const known = values.filter((v): v is string => Boolean(v));
+  if (new Set(known.map(value => value.toUpperCase().replace(/[^A-Z0-9]/g, ''))).size > 1) throw new BrightDataApiError('BRIGHT_DATA_INVALID_RESPONSE');
+  return known[0] ?? null;
+}
+function availableOnline(record: Record<string, unknown>): boolean | null {
+  const values = ['in_stock','is_available','availability','availability_text','stock_status','available_for_delivery'].map(key => parseAvailability(record[key]));
+  if (values.includes(false)) return false;
+  return values.includes(true) ? true : null;
 }
 
 function firstValue(record: Record<string, unknown>, keys: string[]): unknown {
@@ -236,7 +253,7 @@ function parseCondition(value: unknown): ProductOffer['condition'] {
 function parseAvailability(value: unknown): boolean | null {
   if (typeof value === 'boolean') return value;
   if (typeof value !== 'string') return null;
-  const normalized = value.trim().toLowerCase();
+  const normalized = value.trim().toLowerCase().replaceAll('_', ' ');
   if (['in stock', 'available', 'available now', 'true'].includes(normalized)) return true;
   if (['out of stock', 'unavailable', 'sold out', 'false'].includes(normalized)) return false;
   return null;

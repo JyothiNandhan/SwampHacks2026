@@ -3,8 +3,9 @@
 The API and worker are deployed to Railway; Tiger Data TLS, migrations, authenticated
 routes, live receipt extraction and storage across redeployment have been verified.
 Clean Nessie sandbox purchase creation/import now pass. The full live release gate
-remains open because retail search observations do not establish exact-product
-eligibility and fresh Gemini requests currently return HTTP 503.
+remains open until the new retail integration is deployed and the complete live
+priced-worker-to-simulated-refund flow is verified. Gemini 3.5 Flash passed 3/3 live
+synthetic email checks; direct exact-product and shipping evidence now pass.
 Frontend work is paused while these backend release checks are completed.
 
 | Task | Delivered and verified | Remaining release evidence |
@@ -106,8 +107,8 @@ binding it. The binding imports that customer's account tree.
 
 `REGISTER_EVIDENCE` preserves the original under `<EVIDENCE_DIRECTORY>/<userId>/`
 with an immutable file ID and checksum, and returns `evidenceId`/`originalFileId`.
-There is no public upload endpoint in the frozen contracts. The ingest route reads
-already provisioned originals. Email inputs must already be decoded UTF-8 text/HTML;
+The authenticated `/api/v1/documents` upload route also provisions originals. The
+ingest route reads these stored originals. Email inputs must already be decoded UTF-8 text/HTML;
 image OCR needs a live Gemini key and an explicitly selected supported `GEMINI_MODEL`.
 Raw Gemini output, original checksum, model and time are retained privately even if
 JSON validation fails. No originals are deleted by consolidation.
@@ -131,10 +132,9 @@ amount. Amount alone or merchant name alone cannot confirm a refund. Partial
 allocations accumulate without reuse across cases. OVERPAID/unrelated funds remain
 unallocated for review. Confirmation events always state `simulated: true`.
 
-## Railway setup (pending)
+## Railway service configuration
 
-Create a Railway project and two services from this repository, tracking **Anish**
-for branch verification. Both use the repository root (shared pnpm workspace).
+The existing Railway project has two services tracking **main**. Both use the repository root (shared pnpm workspace).
 Select `/apps/api/railway.json` for the API service and
 `/apps/worker/railway.json` for the worker. Both build the root Dockerfile. No
 Docker/Railway build was available locally; the workspace build was verified.
@@ -155,10 +155,11 @@ Docker/Railway build was available locally; the workspace build was verified.
    `WORKER_SCHEDULE_ENABLED=true` after recording purchase-specific monitoring consent.
    Keep one worker service during initial release. The worker polls continuously;
    do not attach a Railway cron schedule to the long-running process.
-5. Best Buy uses exact model/brand searches. Bright Data refreshes only previously
-   normalized, operator-provisioned Amazon/Walmart product URLs for each purchase;
-   no arbitrary caller URL is fetched. Populate these source offers before enabling
-   those monitors. Incomplete shipping/condition/stock or identity stays out of savings.
+5. SerpApi discovers priced observations and supported Amazon/Walmart product URLs.
+   Bright Data verifies product-level identity, condition and stock. Explicit shipping
+   quotes join only for the same product and price; both sources remain evidence.
+   Set API `BRIGHTDATA_WALMART_DATASET_ID=gd_l95fol7l1ru6rlo116` and the provider keys.
+   Incomplete shipping/condition/stock or identity stays out of savings.
 6. Verify public `/health`; check authenticated `/openapi.json`, unauthenticated 401,
    cross-user 404, private evidence persistence after restart, real sandbox imports,
    live provider rate limits and worker retry/replay. Save redacted API logs and a
@@ -226,25 +227,11 @@ See NESSIE_BLOCKER.md and live-nessie-checks.json. API origin:
 
 ### Provider verification — 2026-10-17
 
-A live Gemini extraction using `gemini-3.8-flash` passed on a clearly labeled
-synthetic email receipt: extracted status, USD 300.00 total, DW-1 model and no
-warnings. This was a direct provider check, not a deployed upload/persistence test.
-The configured `gemini-2.5-flash` returned HTTP 404 indicating it is unavailable to
-new users. Set Railway API `GEMINI_MODEL=gemini-3.8-flash` before the receipt check.
-
-Bright Data authentication, collection, polling and snapshot download returned HTTP
-200 using the Amazon product scraper. The documentation example returned
-`dead_page`; a second product returned product details without a current price.
-The adapter correctly rejected these as invalid offers. No verified price, savings
-or retailer integration pass is claimed. Obtain a product with a current priced
-offer before closing this check. Best Buy remains unverified without its API key.
-
-The API was still serving `database-diagnostics-v1` at verification time. Deploy
-commit `a9c019d` or later to both services before running the worker/document checks.
-Receipt persistence requires a successful upload followed by a second API instance
-and an identical checksum. Both this check and the full live Nessie-to-simulated-
-refund flow remain pending.
-
+Current results are in VERIFICATION.md and the redacted live JSON reports. Use
+`GEMINI_MODEL=gemini-3.5-flash`: three live synthetic email cases passed, and the
+deployed bank receipt extracted and matched. The previous 3.8 Flash availability
+failure is superseded. Direct Walmart product and SerpApi shipping evidence pass;
+a deployed priced worker job and full simulated refund still require verification.
 
 ### SerpApi replaces the active Best Buy integration (contract 1.2.0)
 
@@ -264,33 +251,17 @@ as price observations requiring further product and seller verification.
 
 Do not put the provider key in frontend environment variables, screenshots or Git.
 
-The deployed API/worker connectivity probe passed: the real worker consumed its
-queued job and returned SUCCEEDED with one skipped itemless synthetic purchase.
-This was not a retailer or savings test. The live upload then returned
-`EVIDENCE_STORAGE_UNWRITABLE` (503). Container startup now initializes ownership of
-`/data` and `/data/evidence` after the Railway volume mounts, clears supplementary
-groups and drops to UID/GID 1000 before starting the service. A new image deployment
-is required to test this fix; Docker is unavailable in the local environment.
-Migration 002 was applied successfully to the live database with verified TLS.
+The deployed API/worker connectivity probe passed. Private receipt upload, extraction
+and checksum retention across an instance change also passed. Run
+`scripts/verify-live.mjs --documents --require-persistence` for the persistence gate.
+A reused completed connectivity job is not a fresh retailer execution.
 
+The new retail integration retains separate product and shipping provenance. Only
+exact retailer-product and price agreement can fill missing shipping; conditional
+free shipping remains unknown. The worker allows 180 seconds for asynchronous
+collection. Keep batches small and deploy both services after integration changes.
 
-Follow-up deployment verification: receipt upload/read-back and live Gemini extraction
-passed (EXTRACTED, USD 300.00). After the API changed instance, the existing uploaded
-receipt retained its original checksum: persistence across redeployment passed.
-The old account remains malformed; clean-customer purchase creation and import now
-pass. The complete live bank-to-simulated-refund release check remains pending. See VERIFICATION.md for current results.
-
-
-For an automated persistence gate, run `scripts/verify-live.mjs --documents
---require-persistence`. An unchanged API instance, failed extraction or failed worker
-probe now returns a nonzero exit status. The report identifies when a worker probe
-reuses an already completed idempotent job; that is not a fresh retailer execution.
-Nessie accepts the documented `transaction_date` purchase field as well as legacy
-`purchase_date`; missing or contradictory dates fail before any import is saved.
-
-
-Fresh provider-availability check: the three-case live Gemini synthetic email run
-returned HTTP 503 for all requests. No new extraction/accuracy pass is claimed; see
-`live-receipt-evaluation.json`. Use `scripts/evaluate-live-receipts.mjs` to repeat it
-once the provider is available. The safe deployed receipt check reads an already
-extracted receipt and does not substitute for a fresh provider request.
+Nessie sandbox purchase creation uses `purchase_date` and explicit completed status.
+Its response field may be `transaction_date`; contradictory dates fail import.
+Read back amounts before matching: this sandbox rounded a fractional purchase down
+to whole dollars. Do not round expected refunds or fabricate deposit evidence.

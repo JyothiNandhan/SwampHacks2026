@@ -105,3 +105,12 @@ describe('BrightDataAdapter', () => {
     await expect(request).rejects.toBeInstanceOf(BrightDataApiError);
   });
 });
+
+test('reads live Walmart model/availability fields without inventing shipping and rejects conflicts', async () => {
+  const record={product_name:'Casio F91W-1',url:'https://www.walmart.com/ip/192953947',final_price:21.92,currency:'USD',condition:'New',mpn:'F91W-1',product_identifiers:{model:'F91W-1'},specifications:[{name:'Model',value:'F91W-1'}],is_available:true,availability:'in_stock',available_for_delivery:true};
+  const fetchImpl=vi.fn<typeof fetch>().mockResolvedValueOnce(Response.json([record])).mockResolvedValueOnce(Response.json([{...record,availability:'out_of_stock'}])).mockResolvedValueOnce(Response.json([{...record,model:'DIFFERENT-MODEL'}]));
+  const adapter=new BrightDataAdapter({apiKey:'fixture',datasetIds,fetchImpl});
+  expect((await adapter.downloadOffers('sd_live1','walmart'))[0]).toMatchObject({model:'F91W-1',inStock:true,condition:'NEW',priceCents:2192,shippingCents:null});
+  expect((await adapter.downloadOffers('sd_live2','walmart'))[0].inStock).toBe(false);
+  await expect(adapter.downloadOffers('sd_live3','walmart')).rejects.toMatchObject({code:'BRIGHT_DATA_INVALID_RESPONSE'});
+});

@@ -193,6 +193,7 @@ Railway receipt storage persists across API redeployments. See
 [the backend demo](docs/release/DEMO.md) and [measured verification](docs/release/VERIFICATION.md).
 Nessie sandbox purchase creation and deployed import now pass using a clean demo
 customer and explicit completed status. T22/T24 live sign-off remains open:
-exact-product live retail eligibility still needs evidence, and
-fresh Gemini evaluation currently returns HTTP 503. The existing offline refund
+Gemini 3.5 Flash passed 3/3 live synthetic email checks and the bank receipt matched.
+Direct exact-product and shipping evidence pass; the updated retail integration
+still needs deployment and a priced worker-to-simulated-refund run. The existing offline refund
 smoke uses labeled fixture providers and simulated reimbursements.

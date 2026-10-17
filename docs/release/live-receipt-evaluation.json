@@ -3,28 +3,28 @@
   "mode": "LIVE",
   "syntheticOnly": true,
   "source": "EMAIL",
-  "model": "gemini-3.8-flash",
+  "model": "gemini-3.5-flash",
   "realWorldAccuracyMeasured": false,
-  "passed": 0,
+  "passed": 3,
   "total": 3,
   "results": [
     {
       "id": "complete-email",
-      "passed": false,
-      "providerHttpStatus": 503,
-      "errorCode": "EXTRACTION_PROVIDER_FAILED"
+      "passed": true,
+      "attempts": 1,
+      "extractionStatus": "EXTRACTED"
     },
     {
       "id": "non-receipt-injection",
-      "passed": false,
-      "providerHttpStatus": 503,
-      "errorCode": "EXTRACTION_PROVIDER_FAILED"
+      "passed": true,
+      "attempts": 1,
+      "extractionStatus": "REVIEW"
     },
     {
       "id": "uncertain-currency-and-timezone",
-      "passed": false,
-      "providerHttpStatus": 503,
-      "errorCode": "EXTRACTION_PROVIDER_FAILED"
+      "passed": true,
+      "attempts": 1,
+      "extractionStatus": "REVIEW"
     }
   ]
 }

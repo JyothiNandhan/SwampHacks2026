@@ -1,81 +1,33 @@
 # Verification record — October 17, 2026
 
-## Current local checks
+## Current checks
 
-- `pnpm check`: version pins, contracts, workspace types, 174 tests and backend builds passed.
-  One optional PostgreSQL-driver test was skipped by the default run.
-- Migration upgrade test preserves historical Best Buy offers, accepts SerpApi offers,
-  rejects unknown sources and verifies migration replay.
-- `receipt-evaluation.json`: 15/15 synthetic regression expectations passed.
-- `git diff --check`: passed. Docker is unavailable locally; no local image test is claimed.
+- `pnpm check`: version pins, contracts, workspace types, **177 tests** and backend builds passed. One optional PostgreSQL-driver test was skipped by this run.
+- Separate PostgreSQL 14.21 run: migrations 001/002, migration replay, database recovery and six backend integration tests passed (**7 tests**). CI uses PostgreSQL 16.10.
+- Synthetic regression evaluation: 15/15 expectations passed. No real-world OCR accuracy is claimed.
+- Docker is unavailable locally; no local image test is claimed.
 
-## Live checks
+## Deployed checks
 
-The Railway API served commit `9de6e330e321005d2f7307ced3d2e9fb6c30579b`.
-The following checks passed against the deployed service and live database:
+The public API returned HTTP 200 at commit `0c714a7a9aa5c2bab74cb03f2375d32cb3806735`.
 
-- API health and authenticated purchase listing.
-- Database connection with verified TLS and checksums for migrations 001 and 002.
-- Real worker consumed a synthetic zero-value, itemless connectivity probe and returned
-  SUCCEEDED. This tests transport/job execution, not prices or savings.
-- Authenticated private receipt upload and checksum read-back; the mounted volume is writable.
-- The same uploaded receipt retained its checksum after a confirmed API instance change.
-- Live Gemini extraction of the uploaded synthetic email receipt returned EXTRACTED
-  with the expected USD 300.00 total.
+- Authenticated reads, verified Tiger Data TLS and migration checksums passed.
+- Real Railway worker consumed an itemless synthetic connectivity probe. This does not establish retailer execution.
+- Private receipt upload/read-back and identical checksum after an API instance change passed.
+- Clean Nessie synthetic completed USD 300 purchase creation and deployed import passed. The original malformed account was preserved.
+- The imported bank transaction matched its synthetic receipt: CONFIRMED, one item, correct amount, purchase created. See live-bank-receipt-checks.json.
+- Gemini `gemini-3.5-flash` passed **3/3** direct live synthetic EMAIL checks: complete receipt extracted; non-receipt injection and uncertain currency/timezone held for review. The deployed API also extracted the synthetic bank receipt. The prior `gemini-3.8-flash` 503 run is superseded; no real photo corpus was evaluated.
 
-Direct live SerpApi search returned five validated USD price observations. Search
-listings retain unknown identity, stock, shipping and condition; no savings claim
-or deployed SerpApi worker job is inferred. Bright Data collection completed, but
-the tested pages lacked a usable current price and were correctly rejected.
+## Live retail checks and implementation
 
-## Outstanding release checks
+Bright Data's Walmart snapshot returned Casio F91W-1, NEW, in stock, USD 21.92. Shipping was absent and remained unknown. A separate SerpApi Google Product quote returned the same Walmart product ID and price, explicit USD 6.99 shipping and in-stock status. See live-retail-checks.json. These are direct provider checks, not a deployed priced worker pass.
 
-- Clean Nessie sandbox purchase creation and deployed import now pass. The old
-  malformed account is retained but excluded from the clean demo customer.
-- The complete live Nessie-to-simulated-refund flow still needs verified retail
-  evidence, fresh receipt extraction and completed correlated sandbox deposits.
-  The deterministic API/worker/refund integration flow passes with mocked providers;
-  it must remain labeled offline replay.
+The updated integration discovers supported retailer URLs through product quotes, verifies model/condition/stock using Bright Data, and joins shipping only for the same retailer product and identical price. It stores both evidence records and their provenance. Conditional free shipping, conflicting model claims, stale quotes and mismatched prices remain ineligible. Search listings alone cannot create savings. Worker request timeout is 180 seconds for asynchronous collection; keep demo batches small.
 
-Historical local PostgreSQL-driver validation used a temporary PostgreSQL 14.21
-server: three integration/driver tests passed and test schemas were dropped.
-GitHub CI configures PostgreSQL 16.10. These historical checks do not establish a
-complete deployed live-provider release.
+## Remaining release gate
 
+Deploy the new retail integration on both Railway services before testing a priced worker job. Configure `SERPAPI_API_KEY`, `BRIGHTDATA_API_KEY`, `BRIGHTDATA_WALMART_DATASET_ID=gd_l95fol7l1ru6rlo116` and `GEMINI_MODEL=gemini-3.5-flash` on the API. The worker delegates provider requests to the API.
 
-## Backend completion pass
+The full live priced opportunity → approved case → correlated completed simulated deposit → confirmed refund remains unverified. Nessie rounded a USD 33.91 test purchase to USD 33; use read-back amounts and a compatible exact test scenario, never alter refund arithmetic to force confirmation. All bank tests are synthetic; no real money moved.
 
-- Current real PostgreSQL 14.21 run: migration 001/002, migration replay, database pool
-  recovery and all five backend integration tests passed (six tests total).
-- SerpApi observations persisted under SERPAPI in both offers and history; uncertain
-  listings created zero savings opportunities.
-- Current `live-deployment-checks.json` passes authenticated reads, verified database
-  TLS/migration checks, receipt read-back, prior extraction totals and cross-instance
-  persistence. Its worker result explicitly reuses a completed connectivity probe.
-- Remote main CI was green at `c1a5c04` (run 39075420858), before these final backend fixes.
-- Fresh live Gemini evaluation was attempted on three synthetic EMAIL examples.
-  All three requests returned provider HTTP 503; no extraction behavior or accuracy
-  conclusion can be drawn from that run. See live-receipt-evaluation.json. The earlier
-  successful live receipt extraction remains historical evidence, not a current
-  provider availability guarantee.
-- The backend demo collection now asserts successful responses, captures uploaded
-  document/receipt/case IDs, and checks the document checksum. DEMO.md documents
-  individual request order and the boundary between live checks and offline replay.
-
-The supplied https://nessieisreal.com site publishes the same production API origin
-used by the application. Clean sandbox provisioning resolved the demo import blocker. NESSIE_BLOCKER.md
-records the diagnosis and corrected creation fields.
-- Unidentified SerpApi listings now receive distinct source-and-URL price-history
-  keys; two separate products no longer share a `model:null` history stream.
-
-
-## Nessie sandbox resolution
-
-A fresh synthetic customer/checking account was provisioned without deleting older
-records. Purchase creation accepted `purchase_date` and explicit `status: completed`;
-it rejected `transaction_date` as an extra creation field. The completed USD 300
-synthetic purchase was read back, bound to the test user, and imported through the
-deployed authenticated sync route (HTTP 200, job SUCCEEDED, one transaction saved).
-No real money moved. See live-nessie-checks.json. Provider support is not needed to
-continue using this clean demo account. The original account's invalid records were
-not repaired, and the full receipt/retail/refund flow is still not claimed as passed.
+Offline replay verifies the complete recovery path, partial allocations, unrelated-deposit rejection, ownership and idempotency. T22/T24 live sign-off and T25's final team demo/redacted Railway logs remain open. A Railway compute sandbox is unrelated to the Nessie banking sandbox and is not required for these checks.

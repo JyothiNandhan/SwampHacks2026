@@ -10,7 +10,7 @@ export function createInternalPriceHandler(options:{url:string;token:string;fetc
   const endpoint=new URL('/api/v1/internal/monitoring/prices/execute',options.url);
   if(endpoint.protocol!=='https:'&&!['localhost','127.0.0.1','[::1]'].includes(endpoint.hostname))throw new Error('INVALID_INTERNAL_API_URL');
   return async job=>{
-    const response=await (options.fetchImpl??fetch)(endpoint,{method:'POST',redirect:'error',signal:AbortSignal.timeout(30000),
+    const response=await (options.fetchImpl??fetch)(endpoint,{method:'POST',redirect:'error',signal:AbortSignal.timeout(180000),
       headers:{authorization:`Bearer ${options.token}`,'content-type':'application/json','x-idempotency-key':job.idempotencyKey},body:JSON.stringify({jobId:job.id})});
     if(!response.ok){await response.body?.cancel().catch(()=>undefined);throw new Error(response.status===429?'UPSTREAM_RATE_LIMITED':response.status>=500?'UPSTREAM_UNAVAILABLE':'UPSTREAM_REJECTED');}
     try{return await response.json();}catch{throw new Error('UPSTREAM_INVALID_RESPONSE');}

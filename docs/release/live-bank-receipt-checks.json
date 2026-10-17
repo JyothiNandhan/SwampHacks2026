@@ -1,0 +1,10 @@
+{
+  "mode": "LIVE_SANDBOX",
+  "synthetic": true,
+  "realMoneyMoved": false,
+  "bankTransaction": "IMPORTED",
+  "matchStatus": "CONFIRMED",
+  "purchaseCreated": true,
+  "itemCount": 1,
+  "amountMatches": true
+}
