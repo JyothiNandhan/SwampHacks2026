@@ -54,3 +54,8 @@ For PowerShell without bash, run equivalent commands: `node scripts/check-versio
 - An extension production bundle/package step still needs implementation before loading unpacked; the provided stub simply checks TypeScript syntax.
 - Vercel hosts only the website. Railway serves secured API/monitoring workers.
 
+## Foundation verification (T01–T03)
+
+The lockfile is now committed. `pnpm install --frozen-lockfile` is the reproducible team installation path. `pnpm check` validates pins and fixtures, typechecks workspaces, runs contract/API/embedded PostgreSQL tests, and compiles shared contracts plus API/worker. `pnpm dev:api` builds the shared contract package before starting the API; `pnpm build` prepares compiled backend output. Frontend implementation remains deferred.
+
+Database tests run without Docker or external credentials using pinned PGlite. GitHub CI also applies and replays the migration through `pg` against PostgreSQL 16.10. To migrate Tiger Data, explicitly export the provider's TLS `DATABASE_URL`, then run `pnpm db:migrate`; see `packages/db/README.md`. No live provider secrets are needed for foundation tests.

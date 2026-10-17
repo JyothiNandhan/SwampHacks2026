@@ -147,5 +147,17 @@ The previous scaffold pinned packages but did **not** fully freeze JSON field na
 
 **New gate after T02:** Rishav merges shared contract schemas and route registry; all other modules import them. `pnpm check:contracts` and `pnpm check` are required in CI. The schema fields are starter contracts and may evolve through reviewed PRs; they do not yet prove that provider payloads are valid.
 
+## T01–T03 implementation handoff
 
-T01 adds reproducible tooling, the root lockfile, CI and the tested API health skeleton. Complete shared contracts and executable migrations follow in T02 and T03.
+The foundation now includes a committed root lockfile, reproducible Node/pnpm pins, CI, a tested health endpoint, and compiled backend commands (T01); versioned runtime contracts, a route registry and synthetic JSON fixtures (T02); and an executable, checksum-verified PostgreSQL migration with ownership and replay constraints (T03).
+
+```bash
+bash scripts/team-setup.sh
+pnpm dev:api              # GET http://localhost:3001/health
+pnpm check                # pins, contracts, types, tests and builds
+pnpm db:migrate           # explicitly exported DATABASE_URL required
+```
+
+Read [the contract handoff](packages/contracts/README.md) and [database migration instructions](packages/db/README.md) before implementing downstream modules. The route registry is authoritative over the earlier target route examples. Financial routes, provider clients, authentication, business workflows and client applications remain in their scheduled tasks.
+
+Each task is delivered as a separate commit/stacked PR. Merge T01, then T02, then T03 after required CI and review; branch pushes alone do not mark prerequisites MERGED. Migration and contract fixture checks do not represent a live Tiger Data deployment or an integrated recovery workflow.
