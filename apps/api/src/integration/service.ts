@@ -1,3 +1,4 @@
+import { uploadDocument, documentMetadata } from './document-upload.js';
 import { randomUUID, createHash } from 'node:crypto';
 import type pg from 'pg';
 import { z } from 'zod';
@@ -28,6 +29,14 @@ export class BackendService {
     readonly options: { generate?:GenerateReceipt; offers?:OfferProvider } = {}) {
     this.documents = config.EVIDENCE_DIRECTORY ? new PrivateDocumentStore(pool,config.EVIDENCE_DIRECTORY) : null;
     this.executePrices = createPriceExecutor(pool,config,options.offers);
+  }
+  async upload(userId:string,input:unknown) {
+    if(!this.config.EVIDENCE_DIRECTORY)throw new ApiError('DOCUMENTS_NOT_CONFIGURED',503);
+    return uploadDocument(this.pool,this.config.EVIDENCE_DIRECTORY,userId,input);
+  }
+  async document(userId:string,originalFileId:string) {
+    if(!this.config.EVIDENCE_DIRECTORY)throw new ApiError('DOCUMENTS_NOT_CONFIGURED',503);
+    return documentMetadata(this.pool,this.config.EVIDENCE_DIRECTORY,userId,originalFileId);
   }
   async purchases(userId:string,cursor?:string) {
     const ids = (await this.pool.query('SELECT id FROM purchases WHERE user_id=$1 AND ($2::uuid IS NULL OR id>$2) ORDER BY id LIMIT 101',[userId,cursor??null])).rows;

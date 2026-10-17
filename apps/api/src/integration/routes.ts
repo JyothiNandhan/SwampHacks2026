@@ -37,6 +37,8 @@ export function registerBackendRoutes(app: FastifyInstance, config: IntegrationC
   type Handler = (identity:Identity,body:Record<string,unknown>,params:Record<string,string>,cursor?:string)=>Promise<unknown>;
   const requireService=()=>{if(!service)throw new ApiError('DATABASE_NOT_CONFIGURED',503);return service;};
   const handlers:Record<string,Handler>={
+    'POST /documents':(i,b)=>requireService().upload(i.userId,b),
+    'GET /documents/:originalFileId':(i,_b,p)=>requireService().document(i.userId,p.originalFileId),
     'GET /purchases':(i,_b,_p,c)=>requireService().purchases(i.userId,c),
     'GET /subscriptions':(i,_b,_p,c)=>requireService().list(i.userId,'subscriptions',c),
     'GET /opportunities':(i,_b,_p,c)=>requireService().list(i.userId,'opportunities',c),
@@ -59,7 +61,7 @@ export function registerBackendRoutes(app: FastifyInstance, config: IntegrationC
     if(route.prefix===false)continue;
     const handler=handlers[`${route.method} ${route.path}`];
     if(!handler)throw new Error(`Missing handler: ${route.path}`);
-    app.route({method:route.method as 'GET'|'POST',url:`/api/v1${route.path}`,handler:async request=>{
+    app.route({...(route.path==='/documents'?{bodyLimit:6*1024*1024}:{}),method:route.method as 'GET'|'POST',url:`/api/v1${route.path}`,handler:async request=>{
       if(!request.identity)throw new ApiError('UNAUTHORIZED',401);
       const params=(request.params??{}) as Record<string,string>;
       for(const value of Object.values(params))uuid(value);

@@ -153,3 +153,28 @@ test('T21 Best Buy and Bright Data orchestrator uses actual adapters with mocked
     expect(fetchImpl.mock.calls.some(([url])=>String(url).includes('/progress'))).toBe(true);
   }finally{await s.close();}
 },60000);
+
+test('private upload preserves bytes/checksum, rejects invalid media and isolates users',async()=>{
+  const s=await fixture();try{
+    const bytes=Buffer.from('Synthetic receipt evidence — USD 300.00');
+    const uploaded=await s.call('POST','/api/v1/documents',{mimeType:'text/plain',contentBase64:bytes.toString('base64')});
+    expect(uploaded.statusCode,uploaded.body).toBe(200);
+    const metadata=uploaded.json().data;expect(metadata.byteLength).toBe(bytes.length);expect(metadata.checksum).toHaveLength(64);
+    expect((await s.call('GET',`/api/v1/documents/${metadata.originalFileId}`)).json().data).toEqual(metadata);
+    expect((await s.call('GET',`/api/v1/documents/${metadata.originalFileId}`,undefined,otherToken)).statusCode).toBe(404);
+    const reopened=new BackendService(s.pool,s.config.integration!,null);
+    expect((await reopened.document(userId,metadata.originalFileId)).data).toEqual(metadata);
+    const invalid=await s.call('POST','/api/v1/documents',{mimeType:'image/jpeg',contentBase64:bytes.toString('base64')});expect(invalid.statusCode).toBe(415);
+    expect((await s.call('POST','/api/v1/documents',{mimeType:'application/json',contentBase64:bytes.toString('base64')})).statusCode).toBe(400);
+    await writeFile(join(s.directory,userId,`${metadata.originalFileId}.json`),JSON.stringify({mimeType:'text/plain',data:Buffer.from('tampered').toString('base64')}));
+    expect((await s.call('GET',`/api/v1/documents/${metadata.originalFileId}`)).statusCode).toBe(409);
+  }finally{await s.close();}
+},60000);
+
+test('worker executor skips purchases without extracted items without contacting retailers',async()=>{
+  const s=await fixture();try{
+    const purchaseId=(await s.pool.query(`INSERT INTO purchases(user_id,merchant_name,purchased_at,amount_cents,match_status) VALUES($1,'Synthetic connectivity probe',NOW(),0,'REVIEW') RETURNING id`,[userId])).rows[0].id;
+    expect(await s.service.executePrices(userId,[purchaseId])).toMatchObject({observations:0,opportunities:0,skippedPurchases:1});
+    expect(s.offers).not.toHaveBeenCalled();
+  }finally{await s.close();}
+},60000);

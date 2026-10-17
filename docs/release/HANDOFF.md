@@ -183,3 +183,41 @@ is `pnpm --filter @moneyback/api test:release`, labeled offline replay.
 
 Railway reference: https://docs.railway.com/deployments/monorepo and
 https://docs.railway.com/config-as-code/reference.
+
+## Live release checks (v1.1)
+
+Authenticated private upload is now available as `POST /api/v1/documents` with
+`{mimeType, contentBase64}` (4 MiB maximum). The server assigns the file ID, validates
+media signatures/UTF-8, records an evidence checksum and stores it under the user's
+private volume directory. Each user may register at most 100 documents through this
+route. `GET /api/v1/documents/:originalFileId` returns metadata/checksum, never raw
+bytes, and detects missing/tampered files. API contract version 1.1.0 adds these
+routes without changing existing payloads. The user must be provisioned before upload.
+
+Use a local, Git-ignored `.env.verify` with DATABASE_URL, DEPLOY_VERIFY_ACCESS_TOKEN,
+API_BASE_URL and API_TOKENS_JSON; never commit or send these values in chat.
+
+```sh
+# Read-only connectivity, migration and authenticated API checks:
+node --env-file=.env.verify scripts/verify-live.mjs
+# Create one clearly labeled zero-value synthetic connectivity probe and queue it:
+node --env-file=.env.verify scripts/verify-live.mjs --worker
+# Upload a synthetic email receipt, invoke live Gemini and record file checksum:
+node --env-file=.env.verify scripts/verify-live.mjs --documents
+# After redeploying the API, repeat --documents to verify the same checksum
+# from a different API instance. Do not remove the ignored state file between runs.
+```
+
+Worker connectivity intentionally skips an itemless synthetic purchase and does
+not test retail availability or create offers/savings. A live retailer test still
+requires provider keys and valid product identifiers/URLs. Gemini keys/models must
+be enabled on the API service. Local model/provider diagnostics additionally require
+those keys in `.env.verify`. `/health` exposes an instance UUID so the verification
+script can distinguish a read-back from a persistence check across an instance change.
+
+Nessie setup currently reached the live provider and created a synthetic customer
+and checking account. Purchase creation/listing returned an upstream Purchase.status
+validation error. These records have not been represented as a successful purchase
+import. Resolve provider behavior or obtain a valid sandbox purchase before marking
+the live Nessie release check passed. The current verified API origin is
+`https://prod-api.nessieisreal.com`; remove any old Railway NESSIE_BASE_URL override.

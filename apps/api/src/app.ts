@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { databaseFailureCode } from './database-errors.js';
 import { BackendService } from './integration/service.js';
 import { registerBackendRoutes } from './integration/routes.js';
@@ -21,6 +22,7 @@ declare module 'fastify' {
 
 export function buildApp(options: { config?: AppConfig; logger?: boolean; service?: BackendService; database?: pg.Pool } = {}) {
   const config = options.config ?? loadConfig();
+  const instanceId = randomUUID();
   const app = Fastify({
     // Omit URL, headers and bodies entirely: Nessie keys and document data can occur in them.
     logger: options.logger === false ? false : {
@@ -63,7 +65,8 @@ export function buildApp(options: { config?: AppConfig; logger?: boolean; servic
   } })));
   // Liveness only: no credentials, database query, or Nessie call required.
   app.get('/health', async (_request, reply) => {
-    reply.header('x-api-revision', 'database-diagnostics-v1');
+    reply.header('x-api-revision', 'document-upload-v1');
+    reply.header('x-api-instance', instanceId);
     const commit = process.env.RAILWAY_GIT_COMMIT_SHA;
     if (commit && /^[a-f0-9]{40}$/.test(commit)) reply.header('x-deployment-commit', commit);
     return HealthSchema.parse({ status: 'ok', service: 'moneyback-api' });

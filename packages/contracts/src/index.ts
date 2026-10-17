@@ -74,7 +74,7 @@ export type ProductOffer = z.infer<typeof ProductOfferSchema>;
 export type Opportunity = z.infer<typeof OpportunitySchema>;
 export type RecoveryCase = z.infer<typeof RecoveryCaseSchema>;
 
-export const CONTRACT_VERSION = '1.0.0' as const;
+export const CONTRACT_VERSION = '1.1.0' as const;
 export const EvidenceSchema = z.object({
   id: Id, sourceType: z.enum(['RECEIPT', 'TRANSACTION', 'OFFER', 'POLICY', 'USER']),
   sourceId: Id, category: z.string().min(1), acquisitionMethod: z.string().min(1),
@@ -136,8 +136,19 @@ export const MonitorRequestSchema = z.object({ purchaseIds: z.array(Id).min(1) }
 export const HealthSchema = z.object({ status: z.literal('ok'), service: z.literal('moneyback-api') }).strict();
 export const ResponseSchema = <T extends z.ZodType>(data: T) => z.object({ data }).strict();
 
+/** Additive v1.1 private evidence upload; raw document bytes are never returned by GET. */
+export const DocumentUploadRequestSchema = z.object({
+  mimeType: z.enum(['image/jpeg','image/png','image/webp','application/pdf','text/plain','text/html','application/json']),
+  contentBase64: z.string().min(4).max(5592408).regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)
+}).strict();
+export const DocumentMetadataSchema = z.object({
+  originalFileId: Id, evidenceId: Id, mimeType: DocumentUploadRequestSchema.shape.mimeType,
+  byteLength: z.number().int().positive().max(4194304), checksum: z.string().regex(/^[a-f0-9]{64}$/)
+}).strict();
+
 /** Route registry refers to these runtime validators by name. */
 export const HttpSchemas = {
+  DocumentUploadRequest: DocumentUploadRequestSchema, DocumentResponse: ResponseSchema(DocumentMetadataSchema),
   Health: HealthSchema, PurchasePage: PageSchema(PurchaseSchema), EventPage: PageSchema(EventSchema),
   OfferPage: PageSchema(ProductOfferSchema), OpportunityPage: PageSchema(OpportunitySchema),
   SubscriptionPage: PageSchema(SubscriptionSchema), NotificationPage: PageSchema(NotificationSchema),

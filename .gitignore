@@ -20,3 +20,6 @@ AGENTS.md
 .claude/
 .codex/
 *_HANDOFF.md
+
+# Local live-release verification record IDs (no credentials).
+.release-verification-state.json

@@ -399,6 +399,36 @@
         ],
         "url": "{{baseUrl}}/api/v1/deadlines"
       }
+    },
+    {
+      "name": "POST /documents",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/documents",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"mimeType\": \"text/plain\",\n  \"contentBase64\": \"U1lOVEhFVElDIFJFQ0VJUFQ=\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GET /documents/:originalFileId",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/documents/{{originalFileId}}"
+      }
     }
   ]
 }

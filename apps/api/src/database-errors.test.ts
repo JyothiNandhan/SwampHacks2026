@@ -15,7 +15,7 @@ test.each([
     expect(result.statusCode).toBe(503);expect(result.json().error.code).toBe(expected);
     expect(result.body).not.toMatch(/private-password|receipt-value/);
     expect(JSON.stringify(log.mock.calls)).not.toMatch(/private-password|receipt-value/);
-    expect((await app.inject('/health')).headers['x-api-revision']).toBe('database-diagnostics-v1');
+    expect((await app.inject('/health')).headers['x-api-revision']).toBe('document-upload-v1');
   }finally{await app.close();}
 });
 test('unknown error content is not exposed as a database diagnostic',()=>{

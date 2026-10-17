@@ -170,9 +170,26 @@
       "responseSchema": "DeadlinePage",
       "errorSchema": "Error",
       "security": "user"
+    },
+    {
+      "method": "POST",
+      "path": "/documents",
+      "owner": "Anish",
+      "security": "user",
+      "requestSchema": "DocumentUploadRequest",
+      "responseSchema": "DocumentResponse",
+      "errorSchema": "Error"
+    },
+    {
+      "method": "GET",
+      "path": "/documents/:originalFileId",
+      "owner": "Anish",
+      "security": "user",
+      "responseSchema": "DocumentResponse",
+      "errorSchema": "Error"
     }
   ],
-  "contractVersion": "1.0.0",
+  "contractVersion": "1.1.0",
   "responseSingle": {
     "data": {}
   },

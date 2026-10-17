@@ -15,7 +15,7 @@ test('financial routes and documentation fail closed; worker credentials cannot 
     const headers={authorization:`Bearer ${token}`};
     expect((await app.inject({url:'/api/v1/purchases',headers})).statusCode).toBe(503);
     const spec=await app.inject({url:'/openapi.json',headers});expect(spec.statusCode).toBe(200);
-    expect(Object.keys(spec.json().paths)).toHaveLength(18);
+    expect(Object.keys(spec.json().paths)).toHaveLength(20);
     expect(spec.headers['cache-control']).toBe('no-store');
     expect((await app.inject({method:'POST',url:'/api/v1/monitoring/prices/run',headers,payload:{purchaseIds:[userId]}})).statusCode).toBe(403);
     expect((await app.inject({url:'/api/v1/offers/not-uuid',headers})).statusCode).toBe(400);

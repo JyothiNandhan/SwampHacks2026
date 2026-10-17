@@ -47,8 +47,9 @@ export function createPriceExecutor(pool: pg.Pool, config: IntegrationConfig, pr
     const purchases: Purchase[] = [];
     // Authorize the complete batch before any provider calls.
     for (const id of [...new Set(purchaseIds)]) purchases.push(await loadPurchase(pool,userId,id));
-    let observations = 0; let opportunities = 0;
+    let observations = 0; let opportunities = 0; let skippedPurchases = 0;
     for (const purchase of purchases) {
+      if (!purchase.items.length) { skippedPurchases++; continue; }
       const offers = await provider(purchase);
       if (config.PRICE_MONITOR_MODE === 'LIVE' && offers.some(o => o.source === 'FIXTURE')) throw new ApiError('REPLAY_IN_LIVE_MODE', 409);
       const now = new Date();
@@ -80,6 +81,6 @@ export function createPriceExecutor(pool: pg.Pool, config: IntegrationConfig, pr
         });
       }
     }
-    return { observations, opportunities, replay:config.PRICE_MONITOR_MODE === 'REPLAY' };
+    return { observations, opportunities, skippedPurchases, replay:config.PRICE_MONITOR_MODE === 'REPLAY' };
   };
 }
