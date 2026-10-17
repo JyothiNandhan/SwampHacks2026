@@ -108,3 +108,35 @@ Final method/paths and payloads are locked in T02 contracts, and changes require
 - Prioritize a reliable live vertical slice over unfinished extra integrations: Nessie purchase → scanned/email receipt → match → Best Buy/Bright Data offer → policy decision → case → simulated deposit match.
 
 See `TEAM_GPT_CONTEXT.md`, `TASK_TRACKER.csv`, `SETUP_AND_VERSIONS.md` and `config/technology-versions.json` before starting.
+
+
+## ADDENDUM — TWO CLIENTS (WEBSITE + BROWSER EXTENSION)
+**Updated product scope:** MoneyBack OS will provide **(a)** a Next.js website dashboard deployed on Vercel and **(b)** a Chrome/Edge browser extension using Manifest V3. Both connect to the SAME secure Railway backend and Tiger Data database. The dashboard is the financial control center; the extension is an optional, user-triggered evidence capture and notification companion. Neither is a separate backend.
+
+**Sequence remains backend-first.** Existing tasks T01–T25 remain unchanged; after backend readiness gate T24, frontend development runs in parallel with shared contracts. Do not infer that the extension can see an itemized bank purchase or automatically access every retailer.
+
+### Client feature division
+| Website dashboard (`apps/web`) | Browser extension (`apps/extension`) |
+|---|---|
+| Auth0 login and protected session | Explicit login/authorization handshake with backend |
+| Purchases, evidence, timelines | User-approved capture preview on supported retailer pages |
+| Price charts and cross-retailer offers | Small price-drop badge / link to full website |
+| Recovery Action Center / approval | Link to website Recovery Center, no auto-purchases or auto-refunds |
+| Subscription alerts, warranties and deadlines | Optional browser notification of existing server alert |
+| Receipt upload/photo and duplicate review | Capture current page receipt/order details if accessible |
+
+### Post-backend work packages: owners and merge blockers
+| ID | Owner | Work | WAIT FOR MERGE |
+|---|---|---|---|
+| **F01** | **Rishav** | Freeze client-facing OpenAPI/auth/capture contracts, secure per-user tokens, limited-scope capture endpoints, CORS rules and test fixtures | T24 |
+| **F02** | **Rishithaaa** | Next.js Vercel dashboard skeleton: Auth0 login, home, purchases, opportunity/recovery pages with mock contract data | F01 |
+| **F03** | **Nandhan** | Manifest V3 extension skeleton: action popup, explicit capture preview, backend client, no broad site permissions | F01 |
+| **F04** | **Anish** | Retail/order capture parsing normalization + evidence extraction tests; shared validation of physical/email/extension captures | F01 |
+| **F05** | **Rishav** | Integrate F04 capture with account-scoped API, rate limits, permission checks, secure event provenance | F01 + F04 |
+| **F06** | **Nandhan** | Connect extension confirmation to live capture APIs and add backend alert display | F03 + F05 |
+| **F07** | **Rishithaaa** | Wire live purchase/recovery APIs into Vercel dashboard; responsive QA | F02 + F05 |
+| **F08** | **All** | Test website and extension together; cross-browser permission tests, consent and rejection cases, demo rehearsal | F06 + F07 |
+
+**Parallel rule:** F02, F03 and F04 can run in parallel immediately after F01 merges. F05 waits for F04's merge; F06/F07 wait for F05's merge. Rishav remains API/auth owner; Nandhan owns the extension client, Rishithaaa owns the dashboard client, Anish owns capture parsing. This is a POST-BACKEND reassignment only; backend roles in T01–T25 do not change.
+
+**Safety and consent:** No automatic scraping of arbitrary browsing pages, background capture of personal data, cookie theft, silent uploading, or merchant checkout. Store only user-approved purchase evidence and source metadata. Provide delete/withdraw controls.
