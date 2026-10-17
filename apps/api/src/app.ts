@@ -1,3 +1,4 @@
+import { databaseFailureCode } from './database-errors.js';
 import { BackendService } from './integration/service.js';
 import { registerBackendRoutes } from './integration/routes.js';
 import { loadIntegrationConfig } from './integration/config.js';
@@ -40,6 +41,11 @@ export function buildApp(options: { config?: AppConfig; logger?: boolean; servic
 
   app.setErrorHandler((error, request, reply) => {
     if(error instanceof ApiError || error instanceof ExtractionError) return reply.code(error.statusCode).send(ErrorSchema.parse({error:{code:error.code,message:error.code,requestId:request.id}}));
+    const databaseCode = databaseFailureCode(error);
+    if (databaseCode) {
+      app.log.error({ code: databaseCode, requestId: request.id }, 'Database request failed');
+      return reply.code(503).send(ErrorSchema.parse({ error: { code: databaseCode, message: 'Database unavailable; check deployment configuration', requestId: request.id } }));
+    }
     const upstream = error instanceof NessieError;
     const reportedStatus = error instanceof Error && 'statusCode' in error && typeof error.statusCode === 'number' ? error.statusCode : 500;
     const status = upstream ? (error.code === 'NESSIE_TIMEOUT' ? 504 : 502) :
@@ -56,7 +62,12 @@ export function buildApp(options: { config?: AppConfig; logger?: boolean; servic
     code: 'NOT_FOUND', message: 'Route not found', requestId: request.id
   } })));
   // Liveness only: no credentials, database query, or Nessie call required.
-  app.get('/health', async () => HealthSchema.parse({ status: 'ok', service: 'moneyback-api' }));
+  app.get('/health', async (_request, reply) => {
+    reply.header('x-api-revision', 'database-diagnostics-v1');
+    const commit = process.env.RAILWAY_GIT_COMMIT_SHA;
+    if (commit && /^[a-f0-9]{40}$/.test(commit)) reply.header('x-deployment-commit', commit);
+    return HealthSchema.parse({ status: 'ok', service: 'moneyback-api' });
+  });
   const integration = config.integration ?? loadIntegrationConfig({ NODE_ENV: config.nodeEnv });
   registerBackendRoutes(app,integration,options.service ?? (database ? new BackendService(database,integration,nessie) : null));
   return app;
