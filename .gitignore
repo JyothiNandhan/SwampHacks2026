@@ -11,3 +11,12 @@ coverage/
 .wrangler/
 task-zips/
 TASK_ZIP_MANIFEST.md
+
+# Local AI-assistant and handoff artifacts are not project source.
+TEAM_GPT_CONTEXT.md
+TEAM_INTEGRATION_RULES.md
+CLAUDE.md
+AGENTS.md
+.claude/
+.codex/
+*_HANDOFF.md
