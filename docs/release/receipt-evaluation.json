@@ -1,0 +1,88 @@
+{
+  "dataset": "synthetic-regression-v1",
+  "mode": "OFFLINE_FIXTURE",
+  "total": 15,
+  "passed": 15,
+  "cases": [
+    {
+      "id": "receipt-exact",
+      "category": "matching",
+      "passed": true
+    },
+    {
+      "id": "wrong-merchant",
+      "category": "matching",
+      "passed": true
+    },
+    {
+      "id": "wrong-amount",
+      "category": "matching",
+      "passed": true
+    },
+    {
+      "id": "wrong-date",
+      "category": "matching",
+      "passed": true
+    },
+    {
+      "id": "missing-receipt-fields",
+      "category": "matching",
+      "passed": true
+    },
+    {
+      "id": "paper-email-same-order",
+      "category": "duplicates",
+      "passed": true
+    },
+    {
+      "id": "different-order",
+      "category": "duplicates",
+      "passed": true
+    },
+    {
+      "id": "different-total",
+      "category": "duplicates",
+      "passed": true
+    },
+    {
+      "id": "unknown-order",
+      "category": "duplicates",
+      "passed": true
+    },
+    {
+      "id": "policy-explicit-duration",
+      "category": "policies",
+      "passed": true
+    },
+    {
+      "id": "policy-ambiguous",
+      "category": "policies",
+      "passed": true
+    },
+    {
+      "id": "policy-no-purchase-date",
+      "category": "policies",
+      "passed": true
+    },
+    {
+      "id": "policy-exclusions-retained",
+      "category": "policies",
+      "passed": true
+    },
+    {
+      "id": "incorrect-paper-shape",
+      "category": "extraction-validation",
+      "passed": true
+    },
+    {
+      "id": "unsupported-rental-fee",
+      "category": "billing",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "Synthetic fixtures; not a measured real-world OCR accuracy estimate.",
+    "Gemini is mocked; no live model call.",
+    "Policy applicability and ambiguous matches still require review."
+  ]
+}

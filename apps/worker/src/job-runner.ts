@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { JobSchema, type Job } from '@moneyback/contracts';
 
 export interface ClaimedJob extends Job { userId: string | null; idempotencyKey: string; attempts: number; maxAttempts: number; payload: unknown }
@@ -33,8 +34,10 @@ function safeErrorCode(error:unknown):string{
   if(error instanceof Error && /^[A-Z][A-Z0-9_]{2,63}$/.test(error.message))return error.message;
   return 'JOB_EXECUTION_FAILED';
 }
+const ClaimedJobSchema=JobSchema.extend({
+  userId:z.uuid().nullable(),idempotencyKey:z.string().min(1),attempts:z.number().int().positive(),
+  maxAttempts:z.number().int().positive(),payload:z.unknown()
+});
 export function validateClaimedJob(value:unknown):ClaimedJob{
-  const job=value as ClaimedJob; JobSchema.parse(job);
-  if(!Number.isInteger(job.attempts)||job.attempts<1||!Number.isInteger(job.maxAttempts)||job.maxAttempts<1||!job.idempotencyKey)throw new Error('INVALID_JOB');
-  return job;
+  return ClaimedJobSchema.parse(value);
 }

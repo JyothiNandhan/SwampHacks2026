@@ -24,6 +24,9 @@
     "test": "vitest run",
     "example:gate2": "pnpm build && node dist/examples/run-gate2.js",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "evaluate:receipts": "tsx src/evaluation/run.ts",
+    "test:release": "vitest run src/integration/backend.test.ts src/integration/security.test.ts",
+    "operator": "tsx src/integration/operator.ts"
   }
 }

@@ -61,7 +61,7 @@ export function createReceiptExtractor(options: {
         contents: [{ role: 'user', parts: [documentPart] }],
         config: { systemInstruction: `${instructions}\nThe receipt source must be ${source}.`,
           responseMimeType: 'application/json', responseJsonSchema: z.toJSONSchema(ReceiptExtractionSchema),
-          temperature: 0, abortSignal: AbortSignal.timeout(30_000) } });
+          temperature: 0, maxOutputTokens: 8192, abortSignal: AbortSignal.timeout(30_000) } });
     } catch {
       // Provider errors may contain receipt text or credentials; never propagate them.
       throw new ExtractionError('EXTRACTION_PROVIDER_FAILED', 502);

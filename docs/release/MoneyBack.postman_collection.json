@@ -1,0 +1,404 @@
+{
+  "info": {
+    "name": "MoneyBack OS backend T20\u2013T25",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Backend handoff. Set variables and provision your own sandbox evidence. Fixtures/replay are not real refunds. Manual price trigger requires demo/admin role. Approval never submits a merchant request."
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "accountId",
+      "value": ""
+    },
+    {
+      "key": "originalFileId",
+      "value": ""
+    },
+    {
+      "key": "receiptId",
+      "value": ""
+    },
+    {
+      "key": "transactionId",
+      "value": ""
+    },
+    {
+      "key": "duplicateReceiptId",
+      "value": ""
+    },
+    {
+      "key": "purchaseId",
+      "value": ""
+    },
+    {
+      "key": "policyEvidenceId",
+      "value": ""
+    },
+    {
+      "key": "agreementEvidenceId",
+      "value": ""
+    },
+    {
+      "key": "billEvidenceId",
+      "value": ""
+    },
+    {
+      "key": "opportunityId",
+      "value": ""
+    },
+    {
+      "key": "caseId",
+      "value": ""
+    },
+    {
+      "key": "depositId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "GET /health",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/health",
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "POST /sync/nessie",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/sync/nessie",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"accountId\": \"{{accountId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GET /purchases",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/purchases"
+      }
+    },
+    {
+      "name": "GET /subscriptions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/subscriptions"
+      }
+    },
+    {
+      "name": "GET /purchases/:purchaseId/timeline",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/purchases/{{purchaseId}}/timeline"
+      }
+    },
+    {
+      "name": "POST /receipts/ingest",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/receipts/ingest",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"source\": \"PHOTO\",\n  \"originalFileId\": \"{{originalFileId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /receipts/match",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/receipts/match",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"receiptId\": \"{{receiptId}}\",\n  \"transactionIds\": [\n    \"{{transactionId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /receipts/:receiptId/consolidate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/receipts/{{receiptId}}/consolidate",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"receiptIds\": [\n    \"{{receiptId}}\",\n    \"{{duplicateReceiptId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /policies/extract",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/policies/extract",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseId\": \"{{purchaseId}}\",\n  \"evidenceIds\": [\n    \"{{policyEvidenceId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /billing/compare",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/billing/compare",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseId\": \"{{purchaseId}}\",\n  \"evidenceIds\": [\n    \"{{agreementEvidenceId}}\",\n    \"{{billEvidenceId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GET /offers/:purchaseId",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/offers/{{purchaseId}}"
+      }
+    },
+    {
+      "name": "POST /monitoring/prices/run",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/monitoring/prices/run",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"purchaseIds\": [\n    \"{{purchaseId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GET /opportunities",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/opportunities"
+      }
+    },
+    {
+      "name": "POST /recovery/cases",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/recovery/cases",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"opportunityId\": \"{{opportunityId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /recovery/cases/:caseId/approve",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/recovery/cases/{{caseId}}/approve",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"approved\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "POST /refunds/reconcile",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/refunds/reconcile",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"caseId\": \"{{caseId}}\",\n  \"depositIds\": [\n    \"{{depositId}}\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GET /notifications",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/notifications"
+      }
+    },
+    {
+      "name": "GET /deadlines",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/deadlines"
+      }
+    }
+  ]
+}

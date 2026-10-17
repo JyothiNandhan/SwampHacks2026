@@ -17,7 +17,8 @@ export class PostgresJobRepository implements JobRepository {
       SELECT id FROM jobs WHERE status IN ('QUEUED','RETRYING') AND run_after <= $1 ORDER BY run_after,id FOR UPDATE SKIP LOCKED LIMIT 1)
       UPDATE jobs j SET status='RUNNING',locked_at=$1,attempts=attempts+1,updated_at=$1 FROM selected WHERE j.id=selected.id
       RETURNING j.id,j.user_id AS "userId",j.idempotency_key AS "idempotencyKey",j.attempts,j.max_attempts AS "maxAttempts",j.job_type AS "jobType",j.status,j.payload,j.created_at AS "createdAt",j.updated_at AS "updatedAt"`,[now]);
-    return result.rows[0]?validateClaimedJob(result.rows[0]):null;
+    const row=result.rows[0];
+    return row?validateClaimedJob({...row,createdAt:row.createdAt instanceof Date?row.createdAt.toISOString():row.createdAt,updatedAt:row.updatedAt instanceof Date?row.updatedAt.toISOString():row.updatedAt}):null;
   }
   async succeed(id:string,result:unknown,now:Date){await this.pool.query("UPDATE jobs SET status='SUCCEEDED',result_json=$2,locked_at=NULL,updated_at=$3 WHERE id=$1 AND status='RUNNING'",[id,JSON.stringify(result),now]);}
   async retry(id:string,runAfter:Date,safeCode:string,now:Date){await this.pool.query("UPDATE jobs SET status='RETRYING',result_json=$2,run_after=$3,locked_at=NULL,updated_at=$4 WHERE id=$1 AND status='RUNNING'",[id,JSON.stringify({error:safeCode}),runAfter,now]);}
