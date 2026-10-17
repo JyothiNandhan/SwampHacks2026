@@ -1,0 +1,8 @@
+{
+  "purchaseId": "purchase-1",
+  "differenceCents": 0,
+  "evidenceIds": [
+    "evidence-1"
+  ],
+  "eligibility": "REVIEW_REQUIRED"
+}

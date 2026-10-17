@@ -8,13 +8,19 @@
     "pnpm": "9.15.9"
   },
   "scripts": {
-    "check": "pnpm -r --if-present typecheck && pnpm -r --if-present test",
-    "test:retail": "pnpm --filter @moneyback/api test -- src/modules/retail/best-buy-adapter.test.ts"
+    "check:versions": "node scripts/check-versions.mjs",
+    "check": "pnpm check:versions && pnpm check:contracts && pnpm -r --if-present typecheck && pnpm -r --if-present test && pnpm build",
+    "dev:api": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/api dev",
+    "dev:worker": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/worker dev",
+    "init:lock": "pnpm install --lockfile-only",
+    "check:contracts": "node scripts/check-contracts.mjs",
+    "build": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/api build && pnpm --filter @moneyback/worker build",
+    "db:migrate": "pnpm --filter @moneyback/db migrate"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "tsx": "catalog:",
+    "@types/node": "catalog:"
   }
 }
-

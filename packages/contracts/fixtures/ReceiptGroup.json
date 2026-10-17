@@ -1,0 +1,7 @@
+{
+  "receiptIds": [
+    "receipt-1",
+    "receipt-2"
+  ],
+  "canonicalReceiptId": "receipt-1"
+}

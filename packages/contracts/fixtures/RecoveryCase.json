@@ -1,0 +1,10 @@
+{
+  "id": "case-1",
+  "opportunityId": "opportunity-1",
+  "status": "REVIEW",
+  "expectedRefundCents": 5000,
+  "confirmedRefundCents": 0,
+  "matchingNessieDepositId": null,
+  "approvedAt": null,
+  "updatedAt": "2026-10-17T12:00:00Z"
+}
