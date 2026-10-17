@@ -1,0 +1,10 @@
+import {expect,test,vi} from 'vitest';
+import {createInternalPriceHandler} from './service.js';
+const job={id:'j',userId:'u',idempotencyKey:'safe-key',attempts:1,maxAttempts:3,payload:{purchaseIds:['p']},jobType:'PRICE_MONITOR' as const,status:'RUNNING' as const,createdAt:'2026-10-17T00:00:00Z',updatedAt:'2026-10-17T00:00:00Z'};
+test('Railway handler sends only internal auth, payload and replay key',async()=>{const fetchImpl=vi.fn<typeof fetch>().mockResolvedValue(Response.json({processed:1}));
+  await expect(createInternalPriceHandler({url:'https://api.example.com',token:'0123456789abcdef',fetchImpl})(job)).resolves.toEqual({processed:1});
+  expect(fetchImpl).toHaveBeenCalledWith(new URL('https://api.example.com/api/v1/internal/monitoring/prices/execute'),expect.objectContaining({method:'POST',headers:expect.objectContaining({'x-idempotency-key':'safe-key'})}));
+});
+test('Railway handler sanitizes provider response failures',async()=>{const fetchImpl=vi.fn<typeof fetch>().mockResolvedValue(new Response('secret body',{status:503}));
+  await expect(createInternalPriceHandler({url:'https://api.example.com',token:'0123456789abcdef',fetchImpl})(job)).rejects.toThrow('UPSTREAM_UNAVAILABLE');
+});

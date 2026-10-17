@@ -11,13 +11,15 @@
   "devDependencies": {
     "typescript": "catalog:",
     "@types/node": "catalog:",
+    "@types/pg": "catalog:",
     "tsx": "catalog:",
     "vitest": "catalog:"
   },
   "scripts": {
-    "dev": "tsx src/index.ts",
+    "dev": "tsx src/service.ts",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js"
+    "start": "node dist/service.js"
   }
 }
