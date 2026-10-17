@@ -43,7 +43,7 @@ export const MatchCandidateSchema = z.object({
   status: z.enum(['PROPOSED','CONFIRMED','REJECTED','REVIEW'])
 }).strict();
 export const ProductOfferSchema = z.object({
-  id: Id, source: z.enum(['BEST_BUY','BRIGHT_DATA','FIXTURE']), retailerName: z.string(),
+  id: Id, source: z.enum(['BEST_BUY','BRIGHT_DATA','SERPAPI','FIXTURE']), retailerName: z.string(),
   productName: z.string(), sku: z.string().nullable(), model: z.string().nullable(),
   gtin: z.string().nullable(), condition: z.enum(['NEW','OPEN_BOX','REFURBISHED','USED','UNKNOWN']),
   priceCents: Cents, shippingCents: Cents.nullable(), currency: Currency,
@@ -74,7 +74,7 @@ export type ProductOffer = z.infer<typeof ProductOfferSchema>;
 export type Opportunity = z.infer<typeof OpportunitySchema>;
 export type RecoveryCase = z.infer<typeof RecoveryCaseSchema>;
 
-export const CONTRACT_VERSION = '1.1.0' as const;
+export const CONTRACT_VERSION = '1.2.0' as const;
 export const EvidenceSchema = z.object({
   id: Id, sourceType: z.enum(['RECEIPT', 'TRANSACTION', 'OFFER', 'POLICY', 'USER']),
   sourceId: Id, category: z.string().min(1), acquisitionMethod: z.string().min(1),

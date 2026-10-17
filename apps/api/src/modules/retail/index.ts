@@ -16,3 +16,5 @@ export {
 
 export { buildPriceDropOpportunity, compareExactProduct, TigerDataPriceMonitorStore,
   type PriceComparison, type PriceMonitorStore } from './price-monitor.js';
+
+export { SerpApiAdapter, SerpApiError } from './serp-api-adapter.js';

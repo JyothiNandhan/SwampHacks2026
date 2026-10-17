@@ -135,21 +135,21 @@ test('T24 API smoke: Nessie import → receipt → matching → priced opportuni
   }finally{await s.close();}
 },60000);
 
-test('T21 Best Buy and Bright Data orchestrator uses actual adapters with mocked provider HTTP',async()=>{
+test('T21 SerpApi and Bright Data orchestrator uses actual adapters with mocked provider HTTP',async()=>{
   const s=await fixture();try{
     const purchaseId=(await s.pool.query(`INSERT INTO purchases(user_id,merchant_name,purchased_at,amount_cents) VALUES($1,'Demo',NOW(),30000) RETURNING id`,[userId])).rows[0].id;
     const purchase={id:purchaseId,transactionId:null,receiptIds:[],merchantName:'Demo',orderNumber:null,purchasedAt:new Date().toISOString(),amountCents:30000,currency:'USD' as const,matchStatus:'MATCHED' as const,items:[{name:'Watch',brand:'Demo',model:'DW-1',sku:null,gtin:null,quantity:1,unitPriceCents:30000}]};
     await s.pool.query(`INSERT INTO product_offers(user_id,purchase_id,source,retailer_name,product_name,condition,price_cents,product_url,observed_at) VALUES($1,$2,'BRIGHT_DATA','Amazon','Watch','NEW',30000,'https://www.amazon.com/dp/B000000001',NOW())`,[userId,purchaseId]);
     const fetchImpl=vi.fn<typeof fetch>().mockImplementation(async(url)=>{
       const value=String(url);
-      if(value.includes('bestbuy.com'))return Response.json({products:[{sku:123,name:'Demo Watch',salePrice:250,url:'https://www.bestbuy.com/site/watch/123.p',onlineAvailability:true,modelNumber:'DW-1'}]});
+      if(value.includes('serpapi.com'))return Response.json({shopping_results:[{product_id:'123',title:'Demo Watch',source:'Demo Store',price:'$250.00',extracted_price:250,product_link:'https://www.google.com/shopping/product/123'}]});
       if(value.includes('/trigger'))return Response.json({snapshot_id:'s_test123'});
       if(value.includes('/progress'))return Response.json({snapshot_id:'s_test123',status:'ready'});
       return Response.json([{url:'https://www.amazon.com/dp/B000000001',title:'Demo Watch',final_price:250,currency:'USD',availability:'In Stock',model:'DW-1',condition:'New',timestamp:new Date().toISOString()}]);
     });
-    const config=loadIntegrationConfig({BESTBUY_API_KEY:'fixture',BRIGHTDATA_API_KEY:'fixture',BRIGHTDATA_AMAZON_DATASET_ID:'gd_test'});
+    const config=loadIntegrationConfig({SERPAPI_API_KEY:'fixture',BRIGHTDATA_API_KEY:'fixture',BRIGHTDATA_AMAZON_DATASET_ID:'gd_test'});
     const offers=await createOfferProvider(config,s.pool,fetchImpl)(purchase);
-    expect(offers.some(o=>o.source==='BEST_BUY')).toBe(true);expect(offers.some(o=>o.source==='BRIGHT_DATA')).toBe(true);
+    expect(offers.some(o=>o.source==='SERPAPI')).toBe(true);expect(offers.some(o=>o.source==='BRIGHT_DATA')).toBe(true);
     expect(fetchImpl.mock.calls.some(([url])=>String(url).includes('/progress'))).toBe(true);
   }finally{await s.close();}
 },60000);

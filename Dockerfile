@@ -4,7 +4,8 @@ RUN npm install --global pnpm@9.15.9
 COPY . .
 RUN pnpm install --frozen-lockfile && pnpm build
 RUN mkdir -p /data/evidence && chown -R node:node /data
-USER node
+USER root
+ENTRYPOINT ["node", "scripts/container-start.mjs"]
 ENV NODE_ENV=production
 ENV NODE_EXTRA_CA_CERTS=/app/config/tigerdata-ca.pem
 ENV EVIDENCE_DIRECTORY=/data/evidence

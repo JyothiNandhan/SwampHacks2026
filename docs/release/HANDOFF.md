@@ -242,3 +242,31 @@ commit `a9c019d` or later to both services before running the worker/document ch
 Receipt persistence requires a successful upload followed by a second API instance
 and an identical checksum. Both this check and the full live Nessie-to-simulated-
 refund flow remain pending.
+
+
+### SerpApi replaces the active Best Buy integration (contract 1.2.0)
+
+Set `SERPAPI_API_KEY` on the **API** service. The worker delegates provider execution
+to the API and does not need this key. The live search provider now uses SerpApi
+Google Shopping (US, English); `BESTBUY_API_KEY` is no longer read by the integration.
+Historical Best Buy observations and the standalone legacy adapter remain readable.
+Migration `002_serpapi_source` adds the `SERPAPI` source to offer/history constraints
+without rewriting existing data or changing migration 001. Apply `pnpm db:migrate`
+with the trusted database TLS configuration before enabling SerpApi on Railway.
+
+The live SerpApi check returned five validated priced USD listings. This establishes
+provider connectivity and normalization, not exact product matching or savings.
+Search listings retain null model/GTIN/SKU, stock and shipping and UNKNOWN condition;
+they cannot satisfy the automatic opportunity gate. The frontend can display these
+as price observations requiring further product and seller verification.
+
+Do not put the provider key in frontend environment variables, screenshots or Git.
+
+The deployed API/worker connectivity probe passed: the real worker consumed its
+queued job and returned SUCCEEDED with one skipped itemless synthetic purchase.
+This was not a retailer or savings test. The live upload then returned
+`EVIDENCE_STORAGE_UNWRITABLE` (503). Container startup now initializes ownership of
+`/data` and `/data/evidence` after the Railway volume mounts, clears supplementary
+groups and drops to UID/GID 1000 before starting the service. A new image deployment
+is required to test this fix; Docker is unavailable in the local environment.
+Migration 002 was applied successfully to the live database with verified TLS.

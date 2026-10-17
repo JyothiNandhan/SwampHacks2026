@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MoneyBack OS API",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "components": {
     "securitySchemes": {
@@ -1641,6 +1641,7 @@
                             "enum": [
                               "BEST_BUY",
                               "BRIGHT_DATA",
+                              "SERPAPI",
                               "FIXTURE"
                             ]
                           },

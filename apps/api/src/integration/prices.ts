@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import { PurchaseSchema, ReceiptItemSchema, ProductOfferSchema, type ProductOffer, type Purchase } from '@moneyback/contracts';
 import { buildPriceDropOpportunity } from '../modules/retail/price-monitor.js';
-import { BestBuyAdapter } from '../modules/retail/best-buy-adapter.js';
+import { SerpApiAdapter } from '../modules/retail/serp-api-adapter.js';
 import { BrightDataAdapter } from '../modules/retail/bright-data-adapter.js';
 import { transaction, owned } from './database.js';
 import { ApiError } from './security.js';
@@ -17,16 +17,16 @@ export async function loadPurchase(pool: Pick<pg.Pool, 'query'>, userId: string,
 }
 export type OfferProvider = (purchase: Purchase) => Promise<ProductOffer[]>;
 export function createOfferProvider(config: IntegrationConfig, pool: pg.Pool, fetchImpl?: typeof fetch): OfferProvider {
-  const bestBuy = config.BESTBUY_API_KEY ? new BestBuyAdapter({ apiKey:config.BESTBUY_API_KEY,fetchImpl }) : null;
+  const serp = config.SERPAPI_API_KEY ? new SerpApiAdapter({ apiKey:config.SERPAPI_API_KEY,fetchImpl }) : null;
   const bright = config.BRIGHTDATA_API_KEY ? new BrightDataAdapter({ apiKey:config.BRIGHTDATA_API_KEY,
     datasetIds:{ amazon:config.BRIGHTDATA_AMAZON_DATASET_ID,walmart:config.BRIGHTDATA_WALMART_DATASET_ID },fetchImpl, maxPollAttempts:5,pollIntervalMs:1000,timeoutMs:5000 }) : null;
   return async purchase => {
     if (config.PRICE_MONITOR_MODE === 'REPLAY') throw new ApiError('REPLAY_REQUIRES_EXPLICIT_PROVIDER', 503);
-    if (!bestBuy && !bright) throw new ApiError('RETAIL_NOT_CONFIGURED', 503);
+    if (!serp && !bright) throw new ApiError('RETAIL_NOT_CONFIGURED', 503);
     const offers: ProductOffer[] = [];
-    if (bestBuy) for (const item of purchase.items) {
+    if (serp) for (const item of purchase.items) {
       const query = [item.brand,item.model].filter(Boolean).join(' ');
-      if (query) offers.push(...await bestBuy.searchOffers(query, 5));
+      if (query) offers.push(...await serp.searchOffers(query, 5));
     }
     if (bright) {
       const rows = (await pool.query("SELECT DISTINCT product_url FROM product_offers WHERE user_id=(SELECT user_id FROM purchases WHERE id=$1) AND purchase_id=$1 AND source='BRIGHT_DATA' LIMIT 10", [purchase.id])).rows;

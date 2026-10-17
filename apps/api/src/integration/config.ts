@@ -10,7 +10,7 @@ const schema = z.object({
   }),
   INTERNAL_WORKER_TOKEN: z.preprocess(v => v === '' ? undefined : v, z.string().regex(/^[A-Za-z0-9._~-]{32,512}$/).optional()),
   EVIDENCE_DIRECTORY: optional, GEMINI_API_KEY: optional, GEMINI_MODEL: optional,
-  BESTBUY_API_KEY: optional, BRIGHTDATA_API_KEY: optional,
+  SERPAPI_API_KEY: optional, BRIGHTDATA_API_KEY: optional,
   BRIGHTDATA_AMAZON_DATASET_ID: optional, BRIGHTDATA_WALMART_DATASET_ID: optional,
   PRICE_MONITOR_MODE: z.enum(['LIVE', 'REPLAY']).default('LIVE')
 }).superRefine((env, ctx) => {

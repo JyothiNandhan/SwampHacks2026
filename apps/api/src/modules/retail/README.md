@@ -1,3 +1,15 @@
+## Active retail search provider
+
+The backend integration uses `SERPAPI_API_KEY` for SerpApi Google Shopping searches.
+`SerpApiAdapter.searchOffers()` returns USD price observations labeled `SERPAPI`.
+Search results do not establish exact model identity, condition, stock or shipping;
+these unknown fields prevent automatic savings claims. Bright Data refresh remains
+available for configured retailer URLs. Apply DB migration 002 before persisting
+SerpApi observations. Keep all provider keys on the API server.
+
+The following standalone Best Buy adapter documentation describes legacy code;
+`BESTBUY_API_KEY` is no longer read by the active integration.
+
 # Retail adapters (T06 and T10)
 
 This module converts external retailer payloads into the canonical
