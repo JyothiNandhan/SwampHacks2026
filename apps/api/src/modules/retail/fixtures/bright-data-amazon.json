@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Example Smart Watch",
+    "asin": "B0EXAMPLE1",
+    "final_price": "$219.95",
+    "currency": "USD",
+    "url": "https://www.amazon.com/dp/B0EXAMPLE1",
+    "availability": "In Stock",
+    "condition": "new",
+    "model_number": "WATCH-42",
+    "scraped_at": "2026-10-17T13:00:00.000Z"
+  }
+]
+

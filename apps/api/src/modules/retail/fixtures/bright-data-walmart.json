@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "product_name": "Example Smart Watch",
+      "product_id": "987654321",
+      "price": 224.5,
+      "currency_code": "USD",
+      "product_url": "https://www.walmart.com/ip/987654321",
+      "in_stock": false,
+      "condition": "open box",
+      "upc": "012345678905",
+      "shipping_cost": "0.00",
+      "timestamp": "2026-10-17T13:05:00.000Z"
+    }
+  ]
+}
