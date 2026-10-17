@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "MoneyBack OS \u2014 Purchase Capture (Planned)",
+  "version": "0.1.0",
+  "description": "Optional user-initiated purchase evidence capture; implementation scheduled after backend release.",
+  "action": {
+    "default_title": "MoneyBack OS"
+  },
+  "permissions": [
+    "activeTab",
+    "storage"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@moneyback/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "@auth0/nextjs-auth0": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/node": "catalog:"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build"
+  }
+}
