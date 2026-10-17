@@ -1,0 +1,22 @@
+{
+  "receipt": {
+    "source": "PHOTO",
+    "merchantName": "Demo Retailer",
+    "orderNumber": "demo-order-1",
+    "purchasedAt": "2026-10-17T12:00:00Z",
+    "totalCents": 30000,
+    "currency": "USD"
+  },
+  "items": [
+    {
+      "name": "Demo Watch",
+      "brand": "Demo",
+      "model": "DW-1",
+      "sku": "demo-watch",
+      "gtin": null,
+      "quantity": 1,
+      "unitPriceCents": 30000
+    }
+  ],
+  "warningCodes": []
+}
