@@ -3,7 +3,7 @@ import { loadConfig } from './config.js';
 
 test('development can start health-only without provider credentials', () => {
   expect(loadConfig({})).toMatchObject({ nodeEnv: 'development', port: 3001, databaseUrl: undefined,
-    nessie: { baseUrl: 'https://api.reimaginebanking.com', apiKey: undefined, accountId: undefined } });
+    nessie: { baseUrl: 'https://prod-api.nessieisreal.com', apiKey: undefined, accountId: undefined } });
   expect(loadConfig({ DATABASE_URL: '', NESSIE_API_KEY: '' }).databaseUrl).toBeUndefined();
 });
 test('production requires database and Nessie credentials and returns typed values', () => {

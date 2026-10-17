@@ -8,7 +8,7 @@ const envSchema = z.object({
   PORT: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int().min(1).max(65535)).default(3001),
   DATABASE_URL: z.preprocess(value => value === '' ? undefined : value,
     z.url({ protocol: /^postgres(ql)?$/ }).optional()),
-  NESSIE_BASE_URL: z.url({ protocol: /^https?$/ }).default('https://api.reimaginebanking.com'),
+  NESSIE_BASE_URL: z.url({ protocol: /^https?$/ }).default('https://prod-api.nessieisreal.com'),
   NESSIE_API_KEY: optionalSecret,
   NESSIE_ACCOUNT_ID: optionalSecret
 }).superRefine((env, ctx) => {
