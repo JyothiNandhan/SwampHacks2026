@@ -44,3 +44,9 @@ Unhandled HTTP failures and unknown routes use the shared `{ error: { code, mess
 Verification: `pnpm check` checks versions/contracts/types, all existing T05 tests, configuration validation, HTTP errors, lazy pool lifecycle and mocked Nessie success/failure/timeout/path validation, then builds the backend. CI also verifies PostgreSQL migration execution/replay. No schema migration is needed for T04.
 
 The real pool integration test reads **only** `TEST_DATABASE_URL` and is skipped without it. CI runs it against the disposable PostgreSQL service after migrations, verifying connection acquisition, client release, SQL-error recovery and cleanup. It never falls back to a developer's `DATABASE_URL`.
+
+## T08 import service
+
+`createNessieImporter` reads one validated customer account tree (accounts, purchases, merchants, bills and deposits), converts provider dollars to exact integer cents and hands one normalized batch to the store. `TigerDataNessieStore` saves that batch in a transaction with a per-user advisory lock. Accounts, purchases and deposits use provider-ID conflict keys; bills use the existing event idempotency ledger to associate and update their subscription rows. Replaying a provider record updates it instead of duplicating it.
+
+The importer is read-only toward Nessie. Deposits are stored as simulated sandbox deposits, never proof that a merchant issued a real refund. Route registration and authenticated user/customer binding remain T20 work.

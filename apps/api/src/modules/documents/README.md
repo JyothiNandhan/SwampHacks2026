@@ -70,4 +70,8 @@ https://ai.google.dev/api/generate-content
 PR handoff: route POST /api/v1/receipts/ingest; schemas ReceiptIngestRequest,
 ReceiptExtraction, Receipt, ReceiptResponse, Error; no shared fields or migrations added.
 T09/T13 integration is unblocked only after T05 merges with required CI/review.
+
+Gate 2 adds a conservative policy parser (`policy-parser.ts`) and evidence-aware rental
+billing comparison (`billing-comparison.ts`). Ambiguous language is always routed to
+review; no deadline or eligibility is invented.
 Pushes to Anish do not trigger the current feature-branch CI filter; use a PR for CI.
