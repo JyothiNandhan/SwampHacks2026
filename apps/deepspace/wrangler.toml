@@ -1,0 +1,29 @@
+name = "moneyback-os"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat", "assets_navigation_has_no_effect"]
+main = "worker.ts"
+
+[assets]
+directory = "dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/ws/*", "/_deepspace/*"]
+
+[vars]
+# The intended team owner must run `pnpm --filter @moneyback/deepspace login`
+# and `pnpm --filter @moneyback/deepspace exec deepspace app init`.
+DEEPSPACE_APP_ID = "__APP_ID__"
+APP_NAME = "moneyback-os"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["MoneyBackRecordRoom"]
+
+[durable_objects]
+bindings = [
+  { name = "RECORD_ROOMS", class_name = "MoneyBackRecordRoom" }
+]
+
+[dev]
+port = 8780
+inspector_port = 9237

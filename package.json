@@ -12,6 +12,7 @@
     "check": "pnpm check:versions && pnpm check:contracts && pnpm -r --if-present typecheck && pnpm -r --if-present test && pnpm build",
     "dev:api": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/api dev",
     "dev:worker": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/worker dev",
+    "dev:deepspace": "pnpm --filter @moneyback/deepspace dev",
     "init:lock": "pnpm install --lockfile-only",
     "check:contracts": "node scripts/check-contracts.mjs",
     "build": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/api build && pnpm --filter @moneyback/worker build",
