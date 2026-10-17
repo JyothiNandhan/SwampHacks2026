@@ -1,6 +1,6 @@
 # MoneyBack OS — Backend-First Team Execution Plan
 
-**Four developers · Capital One Nessie hackathon · Backend first · Frontend later**
+**Four developers · Capital One Nessie hackathon · DeepSpace-enabled from foundation · Backend-first delivery**
 
 ## What we are building
 An autonomous post-purchase recovery service. A Nessie purchase is reconciled to an email/photo receipt, mapped to an exact item, monitored against Best Buy and Bright Data offers, evaluated against return terms, turned into a user-approved recovery case, and optionally reconciled to a *simulated* incoming Nessie deposit. Additional capabilities include refunds, subscriptions, charges, warranties, paper-receipt deduplication, and textbook / gift-card / rental deadlines. No chatbot is required for the core workflow.
@@ -13,7 +13,7 @@ An autonomous post-purchase recovery service. A Nessie purchase is reconciled to
 | **Rishithaaa** | `apps/api/src/modules/recovery/`, `deadlines/`, `timeline/`, `notifications/` | Recovery Action Center API, missing refund checks, approvals/state machine, purchase timeline, textbook/gift-card/rental reminders |
 | **Nandhan** | `apps/api/src/modules/retail/`, `opportunities/`, `apps/worker/` | Best Buy API, Bright Data dataset scrapers, exact SKU matching, price observations, price drops and scheduled monitors |
 
-**Frontend:** postponed until the backend release gate. Later assign a frontend owner and start `apps/web/` on a separate branch. No frontend feature should block backend progress.
+**DeepSpace client foundation starts immediately.** The production financial workflow remains backend-first, but the team will establish a dedicated DeepSpace Vite/React + Hono Worker application early so authentication, deployment identity and real-time event contracts are not retrofitted at the end. DeepSpace replaces the previously proposed Vercel/Auth0 dashboard stack. It does not replace the Railway Fastify API or Tiger Data.
 
 ## Ground rules
 - One shared repository and one root `pnpm-lock.yaml`. Do **not** commit `package-lock.json`, `yarn.lock`, or a second lockfile.
@@ -33,6 +33,7 @@ An autonomous post-purchase recovery service. A Nessie purchase is reconciled to
 | **T01** | Rishav | Commit common config, workspaces, CI, backend skeleton, dev commands, exact versions; generate and commit `pnpm-lock.yaml` on internet-connected laptop | START | Others can prepare notes/fixtures offline |
 | **T02** | Rishav | Freeze `packages/contracts`: purchase, receipt, item, offer, policy, opportunity, refund, event schemas and HTTP response/error structures; add sample JSON fixtures | T01 | Other members review drafts |
 | **T03** | Rishav | Tiger Data migrations: users, accounts, transactions, receipts, orders/items, evidence, policies, offers/time series, cases, refunds, subscriptions, jobs/events | T02 | AI/retail modules develop against JSON fixtures |
+| **D01** | Rishav + team | Establish `apps/deepspace`: pinned DeepSpace SDK, Vite/React client, Hono Worker, shared app identity, authentication boundary, health view and synthetic real-time notification fixture; no production financial data | START | Yes; must not block T01–T11 |
 
 ### Gate 1 — Independent modules (parallel after T02)
 | ID | Owner | Exact task and acceptance | Wait for merge | Parallel? |
@@ -67,9 +68,23 @@ An autonomous post-purchase recovery service. A Nessie purchase is reconciled to
 | **T23** | Anish | Evaluate receipt/duplicate/policy matching, including ambiguous/incorrect papers; publish measured test outcomes | T09 + T13 + T17 | Yes |
 | **T24** | Rishav | CI smoke tests: Nessie → receipt → priced item → opportunity → approved case → simulated refund; deploy stable Railway API | T20 + T21 + T22 + T23 | Release gate |
 | **T25** | All | Backend-only Postman/Bruno/Swagger demo, README polish, API logs screenshots, handoff | T24 | Final backend milestone |
-| **F01** | To be assigned | Begin Vercel frontend using stable OpenAPI + fixtures (no backend rewrites) | T24 | After backend validated |
+| **F01** | Rishav | Freeze client-facing OpenAPI and DeepSpace authentication/capture contracts using the D01 foundation | T24 + D01 | After backend validated |
 
 **Possible parallel starts immediately after T02:** Rishav T03/T04, Anish T05, Nandhan T06, Rishithaaa T07. Don't block research, contract tests, and mock implementations while waiting for other API keys.
+
+### Verified implementation status — 2026-10-17
+| Task | Repository status | Next action |
+|---|---|---|
+| **T04** | Complete and merged to `main` (`e7caed9`) | T08 may consume it after its remaining prerequisites are confirmed |
+| **T05** | Complete and merged to `main` through PR #4 | T09 may proceed |
+| **T06** | Implemented and pushed on `Nandhan` (`0c7a21f`), not merged | Create a clean feature PR containing the retail adapter commit only |
+| **T07** | No implementation visible on fetched GitHub branches | Rishithaaa must push a tested feature branch and open a PR |
+| **T08** | No implementation visible on fetched GitHub branches | Rishav implements Nessie import and Tiger Data idempotent persistence |
+| **T09** | No implementation beyond T05 visible on fetched GitHub branches | Anish implements matching and duplicate detection |
+| **T10** | Implemented and pushed on `Nandhan` (`0c7a21f`), not merged | Merge with T06 through a clean reviewed PR; live dataset credentials remain deployment configuration |
+| **T11** | No implementation visible on fetched GitHub branches | Begin after T07 is merged |
+
+“No implementation visible” means no qualifying commit was present on the fetched remote branches; a teammate may still have unpushed local work.
 
 ## Feature ownership (multiple modules make one feature)
 | Feature | Primary coordinator | Others required |
@@ -103,22 +118,24 @@ Final method/paths and payloads are locked in T02 contracts, and changes require
 
 ## Deployment and testing
 - `apps/api` → Railway API; `apps/worker` → Railway cron/scheduled worker; Tiger Data → PostgreSQL; private object storage for documents.
-- Vercel web **only after T24**. Auth0 frontend sign-in postponed; backend must still validate access tokens / restrict demo endpoints; no unauthenticated financial routes.
+- `apps/deepspace` → DeepSpace-hosted Vite/React dashboard and Hono Worker. DeepSpace authentication and real-time collections support the client experience; the Railway API must validate the chosen access-token contract before exposing financial data.
+- Tiger Data remains the authoritative financial datastore. DeepSpace collections initially contain only sanitized notification/event projections, never provider keys, raw receipts or complete bank transactions.
+- Commit the server-minted `DEEPSPACE_APP_ID` in `wrangler.toml`; keep DeepSpace session files, identity tokens and `.dev.vars` secret. The intended team owner must authenticate before `app init` or deployment.
 - Validate in Postman/Bruno or API documentation; GitHub Actions must pass. Keep a recorded/frozen demo price response **labeled replay** if providers rate-limit or fail.
 - Prioritize a reliable live vertical slice over unfinished extra integrations: Nessie purchase → scanned/email receipt → match → Best Buy/Bright Data offer → policy decision → case → simulated deposit match.
 
 See `TEAM_GPT_CONTEXT.md`, `TASK_TRACKER.csv`, `SETUP_AND_VERSIONS.md` and `config/technology-versions.json` before starting.
 
 
-## ADDENDUM — TWO CLIENTS (WEBSITE + BROWSER EXTENSION)
-**Updated product scope:** MoneyBack OS will provide **(a)** a Next.js website dashboard deployed on Vercel and **(b)** a Chrome/Edge browser extension using Manifest V3. Both connect to the SAME secure Railway backend and Tiger Data database. The dashboard is the financial control center; the extension is an optional, user-triggered evidence capture and notification companion. Neither is a separate backend.
+## ADDENDUM — TWO CLIENTS (DEEPSPACE DASHBOARD + BROWSER EXTENSION)
+**Updated product scope:** MoneyBack OS will provide **(a)** a Vite/React dashboard deployed through DeepSpace and **(b)** a Chrome/Edge browser extension using Manifest V3. Both connect to the SAME secure Railway backend and Tiger Data database. DeepSpace adds the dashboard authentication, deployment and real-time notification layer; it is not a second financial source of truth. The extension remains an optional, user-triggered evidence capture and notification companion.
 
-**Sequence remains backend-first.** Existing tasks T01–T25 remain unchanged; after backend readiness gate T24, frontend development runs in parallel with shared contracts. Do not infer that the extension can see an itemized bank purchase or automatically access every retailer.
+**Sequence remains backend-first.** D01 establishes the DeepSpace shell and synthetic real-time flow early; production financial screens still wait for backend readiness gate T24 and stable shared contracts. Existing tasks T01–T25 remain unchanged. Do not infer that the extension can see an itemized bank purchase or automatically access every retailer.
 
 ### Client feature division
-| Website dashboard (`apps/web`) | Browser extension (`apps/extension`) |
+| DeepSpace dashboard (`apps/deepspace`) | Browser extension (`apps/extension`) |
 |---|---|
-| Auth0 login and protected session | Explicit login/authorization handshake with backend |
+| DeepSpace login and protected session | Explicit login/authorization handshake with backend |
 | Purchases, evidence, timelines | User-approved capture preview on supported retailer pages |
 | Price charts and cross-retailer offers | Small price-drop badge / link to full website |
 | Recovery Action Center / approval | Link to website Recovery Center, no auto-purchases or auto-refunds |
@@ -128,13 +145,13 @@ See `TEAM_GPT_CONTEXT.md`, `TASK_TRACKER.csv`, `SETUP_AND_VERSIONS.md` and `conf
 ### Post-backend work packages: owners and merge blockers
 | ID | Owner | Work | WAIT FOR MERGE |
 |---|---|---|---|
-| **F01** | **Rishav** | Freeze client-facing OpenAPI/auth/capture contracts, secure per-user tokens, limited-scope capture endpoints, CORS rules and test fixtures | T24 |
-| **F02** | **Rishithaaa** | Next.js Vercel dashboard skeleton: Auth0 login, home, purchases, opportunity/recovery pages with mock contract data | F01 |
+| **F01** | **Rishav** | Freeze client-facing OpenAPI/DeepSpace-auth/capture contracts, secure per-user tokens, limited-scope capture endpoints, CORS rules and test fixtures | T24 + D01 |
+| **F02** | **Rishithaaa** | Extend the DeepSpace dashboard: home, purchases, opportunity/recovery pages with mock contract data | F01 |
 | **F03** | **Nandhan** | Manifest V3 extension skeleton: action popup, explicit capture preview, backend client, no broad site permissions | F01 |
 | **F04** | **Anish** | Retail/order capture parsing normalization + evidence extraction tests; shared validation of physical/email/extension captures | F01 |
 | **F05** | **Rishav** | Integrate F04 capture with account-scoped API, rate limits, permission checks, secure event provenance | F01 + F04 |
 | **F06** | **Nandhan** | Connect extension confirmation to live capture APIs and add backend alert display | F03 + F05 |
-| **F07** | **Rishithaaa** | Wire live purchase/recovery APIs into Vercel dashboard; responsive QA | F02 + F05 |
+| **F07** | **Rishithaaa** | Wire live purchase/recovery APIs and sanitized real-time events into the DeepSpace dashboard; responsive QA and DeepSpace deployment | F02 + F05 |
 | **F08** | **All** | Test website and extension together; cross-browser permission tests, consent and rejection cases, demo rehearsal | F06 + F07 |
 
 **Parallel rule:** F02, F03 and F04 can run in parallel immediately after F01 merges. F05 waits for F04's merge; F06/F07 wait for F05's merge. Rishav remains API/auth owner; Nandhan owns the extension client, Rishithaaa owns the dashboard client, Anish owns capture parsing. This is a POST-BACKEND reassignment only; backend roles in T01–T25 do not change.
