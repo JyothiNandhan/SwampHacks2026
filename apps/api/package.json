@@ -11,6 +11,7 @@
     "@moneyback/contracts": "workspace:*"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "catalog:",
     "typescript": "catalog:",
     "@types/node": "catalog:",
     "tsx": "catalog:",
@@ -21,6 +22,7 @@
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "example:gate2": "pnpm build && node dist/examples/run-gate2.js",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js"
   }
