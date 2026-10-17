@@ -1,0 +1,34 @@
+id,owner,task,wait_for_merged
+T01,Rishav,Toolchain + lockfile,START
+T02,Rishav,Contracts + fixtures,T01
+T03,Rishav,Tiger Data migrations,T02
+T04,Rishav,Fastify + Nessie client,T02
+T05,Anish,Gemini receipt extraction,T02
+T06,Nandhan,Best Buy adapter,T02
+T07,Rishithaaa,Recovery state machine,T02
+T08,Rishav,Nessie sync,T03;T04
+T09,Anish,Receipt matching and duplicates,T05
+T10,Nandhan,Bright Data adapter,T06
+T11,Rishithaaa,Case recommendations and notifications,T07
+T12,Rishav,Connect receipts to Nessie,T08;T09
+T13,Anish,Policies and warranties,T05
+T14,Nandhan,Price monitor calculation and matching,T10;T03
+T15,Rishithaaa,Refund matching,T11
+T16,Rishav,Subscription increases,T08
+T17,Anish,Rental invoice diff,T13
+T18,Rishithaaa,Timelines and deadlines,T11;T13
+T19,Nandhan,Railway worker,T14
+T20,Rishav,Register all API routes and deploy,T12;T14;T15;T16;T17;T18
+T21,Nandhan,Live price scheduler integration,T19;T20
+T22,Rishithaaa,Nessie deposit reconciliation integration,T15;T20
+T23,Anish,AI evaluation,T09;T13;T17
+T24,Rishav,End-to-end CI and Railway release,T20;T21;T22;T23
+T25,All,API demo and submission,T24
+F01,Rishav,"Client contracts, Auth0/access tokens, capture API and consent",T24
+F02,Rishithaaa,Vercel website dashboard skeleton,F01
+F03,Nandhan,Manifest V3 extension shell and capture preview,F01
+F04,Anish,Page capture parsing and evidence normalization,F01
+F05,Rishav,Live authenticated capture integration,F01;F04
+F06,Nandhan,Extension backend integration and alert display,F03;F05
+F07,Rishithaaa,Live website dashboard integration,F02;F05
+F08,All,Website and extension e2e demo,F06;F07

@@ -1,0 +1,26 @@
+{
+  "name": "@moneyback/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "fastify": "catalog:",
+    "@google/genai": "catalog:",
+    "pg": "catalog:",
+    "zod": "catalog:",
+    "@moneyback/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "vitest": "catalog:"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js"
+  }
+}

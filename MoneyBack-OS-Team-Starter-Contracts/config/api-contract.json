@@ -1,0 +1,101 @@
+{
+  "apiBasePath": "/api/v1",
+  "jsonNaming": "camelCase",
+  "databaseNaming": "snake_case",
+  "money": "integer cents; USD",
+  "datetime": "ISO 8601 UTC/offset",
+  "responseCollection": {
+    "data": [],
+    "nextCursor": null
+  },
+  "errors": {
+    "error": {
+      "code": "STRING_CODE",
+      "message": "Human readable",
+      "requestId": "req-..."
+    }
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/purchases",
+      "owner": "Rishav",
+      "returns": "Page<Purchase>"
+    },
+    {
+      "method": "GET",
+      "path": "/purchases/:purchaseId/timeline",
+      "owner": "Rishithaaa",
+      "returns": "timeline events"
+    },
+    {
+      "method": "POST",
+      "path": "/receipts/ingest",
+      "owner": "Anish",
+      "returns": "Receipt"
+    },
+    {
+      "method": "POST",
+      "path": "/receipts/match",
+      "owner": "Anish",
+      "returns": "MatchCandidate"
+    },
+    {
+      "method": "POST",
+      "path": "/receipts/:receiptId/consolidate",
+      "owner": "Anish",
+      "returns": "canonical receipt group"
+    },
+    {
+      "method": "GET",
+      "path": "/offers/:purchaseId",
+      "owner": "Nandhan",
+      "returns": "Page<ProductOffer>"
+    },
+    {
+      "method": "POST",
+      "path": "/monitoring/prices/run",
+      "owner": "Nandhan",
+      "returns": "monitoring job result",
+      "security": "admin/demo only"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities",
+      "owner": "Rishithaaa",
+      "returns": "Page<Opportunity>"
+    },
+    {
+      "method": "POST",
+      "path": "/recovery/cases",
+      "owner": "Rishithaaa",
+      "returns": "RecoveryCase"
+    },
+    {
+      "method": "POST",
+      "path": "/recovery/cases/:caseId/approve",
+      "owner": "Rishithaaa",
+      "returns": "RecoveryCase"
+    },
+    {
+      "method": "POST",
+      "path": "/refunds/reconcile",
+      "owner": "Rishithaaa",
+      "returns": "reconciliation result",
+      "security": "internal job"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications",
+      "owner": "Rishithaaa",
+      "returns": "Page<Notification>"
+    },
+    {
+      "method": "POST",
+      "path": "/captures/extension",
+      "owner": "Rishav + Anish",
+      "returns": "Receipt",
+      "security": "user initiated and authenticated"
+    }
+  ]
+}
