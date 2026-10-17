@@ -270,3 +270,10 @@ This was not a retailer or savings test. The live upload then returned
 groups and drops to UID/GID 1000 before starting the service. A new image deployment
 is required to test this fix; Docker is unavailable in the local environment.
 Migration 002 was applied successfully to the live database with verified TLS.
+
+
+Follow-up deployment verification: receipt upload/read-back and live Gemini extraction
+passed (EXTRACTED, USD 300.00). After the API changed instance, the existing uploaded
+receipt retained its original checksum: persistence across redeployment passed.
+The Nessie purchase-listing HTTP 400 remains reproducible; the complete live bank-to-
+simulated-refund release check remains pending. See VERIFICATION.md for current results.

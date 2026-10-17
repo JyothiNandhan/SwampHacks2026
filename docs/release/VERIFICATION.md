@@ -19,6 +19,7 @@ The following checks passed against the deployed service and live database:
 - Real worker consumed a synthetic zero-value, itemless connectivity probe and returned
   SUCCEEDED. This tests transport/job execution, not prices or savings.
 - Authenticated private receipt upload and checksum read-back; the mounted volume is writable.
+- The same uploaded receipt retained its checksum after a confirmed API instance change.
 - Live Gemini extraction of the uploaded synthetic email receipt returned EXTRACTED
   with the expected USD 300.00 total.
 
@@ -29,7 +30,6 @@ the tested pages lacked a usable current price and were correctly rejected.
 
 ## Outstanding release checks
 
-- Repeat receipt checksum verification after the API switches to a different instance.
 - Nessie sandbox purchase listing still returns HTTP 400 with a missing Purchase.status
   validation error. Customer/account setup succeeded; purchase import has not passed.
 - The complete live Nessie-to-simulated-refund flow remains blocked by that upstream error.
