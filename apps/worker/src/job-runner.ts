@@ -38,4 +38,3 @@ export function validateClaimedJob(value:unknown):ClaimedJob{
   if(!Number.isInteger(job.attempts)||job.attempts<1||!Number.isInteger(job.maxAttempts)||job.maxAttempts<1||!job.idempotencyKey)throw new Error('INVALID_JOB');
   return job;
 }
-

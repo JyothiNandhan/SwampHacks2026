@@ -76,4 +76,3 @@ function exactIdentity(item: ReceiptItem, offer: ProductOffer): { matched: boole
   return { matched: false, reason: 'NO_EXACT_IDENTIFIER' };
 }
 function normalize(value: string): string { return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, ''); }
-

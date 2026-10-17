@@ -26,4 +26,3 @@ export async function runWorker(env:NodeJS.ProcessEnv=process.env):Promise<never
 }
 
 if(import.meta.url===`file://${process.argv[1]}`)runWorker().catch(()=>{process.stderr.write('Worker failed to start\n');process.exit(1);});
-

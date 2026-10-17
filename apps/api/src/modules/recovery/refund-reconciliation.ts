@@ -51,4 +51,3 @@ function isCorrelated(reference: string | null, expectation: RefundExpectation):
   return merchant.length >= 4 && candidate.includes(merchant) && /refund|credit|return/.test(candidate);
 }
 function normalize(value: string | null): string { return value?.trim().toLowerCase().replace(/[^a-z0-9]/g,'') ?? ''; }
-

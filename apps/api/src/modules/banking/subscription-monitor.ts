@@ -15,4 +15,3 @@ export function detectSubscriptionPriceChange(subscription: Subscription, histor
     increaseCents: current.amountCents - previous.amountCents, supported: true, reason: 'CONSECUTIVE_RECURRING_CHARGES' };
 }
 function normalize(value: string): string { return value.trim().toLowerCase().replace(/[^a-z0-9]/g,''); }
-

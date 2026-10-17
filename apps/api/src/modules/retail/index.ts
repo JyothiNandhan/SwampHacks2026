@@ -16,4 +16,3 @@ export {
 
 export { buildPriceDropOpportunity, compareExactProduct, TigerDataPriceMonitorStore,
   type PriceComparison, type PriceMonitorStore } from './price-monitor.js';
-

@@ -66,4 +66,3 @@ export async function runGate2Example():Promise<Gate2ExampleResult>{
     savingsCents:opportunity.estimatedSavingsCents!,recommendation:recommendation.decision,approvedStatus:recoveryCase.status,
     refundState:summarizeRefunds(14000,refunds).state,subscriptionIncreaseCents:subscription.increaseCents,rentalDifferenceCents:rental.comparison.differenceCents};
 }
-

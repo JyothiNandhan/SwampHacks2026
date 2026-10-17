@@ -23,4 +23,3 @@ export class PostgresJobRepository implements JobRepository {
   async retry(id:string,runAfter:Date,safeCode:string,now:Date){await this.pool.query("UPDATE jobs SET status='RETRYING',result_json=$2,run_after=$3,locked_at=NULL,updated_at=$4 WHERE id=$1 AND status='RUNNING'",[id,JSON.stringify({error:safeCode}),runAfter,now]);}
   async fail(id:string,safeCode:string,now:Date){await this.pool.query("UPDATE jobs SET status='FAILED',result_json=$2,locked_at=NULL,updated_at=$3 WHERE id=$1 AND status='RUNNING'",[id,JSON.stringify({error:safeCode}),now]);}
 }
-

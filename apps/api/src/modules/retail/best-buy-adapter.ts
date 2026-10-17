@@ -174,4 +174,3 @@ function validateRetailerUrl(value: string): string {
     return url.toString();
   } catch { throw new BestBuyApiError('BEST_BUY_INVALID_RESPONSE'); }
 }
-

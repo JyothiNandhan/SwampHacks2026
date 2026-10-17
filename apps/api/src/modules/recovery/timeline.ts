@@ -31,4 +31,3 @@ function notificationType(type: Deadline['type']): Notification['type'] {
   return type === 'RETURN' ? 'RETURN_DEADLINE' : type === 'GIFT_CARD' ? 'GIFT_CARD' : type;
 }
 function human(type: Deadline['type']): string { return type.toLowerCase().replace('_',' '); }
-

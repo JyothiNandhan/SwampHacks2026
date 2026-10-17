@@ -105,4 +105,3 @@ describe('BrightDataAdapter', () => {
     await expect(request).rejects.toBeInstanceOf(BrightDataApiError);
   });
 });
-

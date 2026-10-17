@@ -100,4 +100,3 @@ function parseExplicitEndDate(text:string):Date|null{
 function retentionCategory(type:Policy['policyType']|null):'KEEP_ORIGINAL'|'KEEP_DIGITAL'|'REVIEW'{
   return type==='WARRANTY'||type==='RENTAL'||type==='TEXTBOOK'?'KEEP_ORIGINAL':type?'KEEP_DIGITAL':'REVIEW';
 }
-

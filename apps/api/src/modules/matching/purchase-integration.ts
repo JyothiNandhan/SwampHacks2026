@@ -50,4 +50,3 @@ export class TigerDataPurchaseIntegrationStore implements PurchaseIntegrationSto
     } catch(error){await client.query('ROLLBACK');throw error;} finally{client.release();}
   }
 }
-

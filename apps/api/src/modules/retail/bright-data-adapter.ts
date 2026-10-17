@@ -266,4 +266,3 @@ function isSnapshotId(value: string): boolean { return /^s(?:d)?_[A-Za-z0-9_-]+$
 function validateSnapshotId(value: string): void {
   if (!isSnapshotId(value)) throw new BrightDataApiError('BRIGHT_DATA_INVALID_RESPONSE');
 }
-
