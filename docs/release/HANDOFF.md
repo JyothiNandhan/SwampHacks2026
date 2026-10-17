@@ -2,15 +2,16 @@
 
 The API and worker are deployed to Railway; Tiger Data TLS, migrations, authenticated
 routes, live receipt extraction and storage across redeployment have been verified.
-The full live release gate remains open because Nessie rejects sandbox purchase
-listing and retail search observations do not establish exact-product eligibility.
+Clean Nessie sandbox purchase creation/import now pass. The full live release gate
+remains open because retail search observations do not establish exact-product
+eligibility and fresh Gemini requests currently return HTTP 503.
 Frontend work is paused while these backend release checks are completed.
 
 | Task | Delivered and verified | Remaining release evidence |
 |---|---|---|
 | T20 | Contract routes, auth/authz, env validation, OpenAPI, Railway API, private volume and verified database TLS | Check the latest deployment after backend changes |
 | T21 | Real Railway worker connectivity; SerpApi live priced observations; Bright Data collection transport; conservative source persistence and replay tests | Verified exact-product live offers and a priced live worker job |
-| T22 | PostgreSQL smoke verifies approval, correlated completed simulated deposits, partial refunds and allocation guards | Nessie sandbox purchase import and complete live simulated refund flow |
+| T22 | PostgreSQL smoke verifies approval, correlated completed simulated deposits, partial refunds and allocation guards | Complete live simulated refund flow (sandbox purchase import now passes) |
 | T23 | 15/15 synthetic regression cases; live Gemini synthetic email extraction | A consented real photographed/email receipt corpus for real-world accuracy |
 | T24 | Green remote CI; current real-driver PostgreSQL migration and smoke checks; stable Railway API/worker | Complete live bank-to-simulated-refund flow |
 | T25 | Postman collection, OpenAPI, backend demo commands and updated release handoff | Final backend demo and redacted Railway log screenshots |
@@ -216,12 +217,12 @@ be enabled on the API service. Local model/provider diagnostics additionally req
 those keys in `.env.verify`. `/health` exposes an instance UUID so the verification
 script can distinguish a read-back from a persistence check across an instance change.
 
-Nessie setup currently reached the live provider and created a synthetic customer
-and checking account. Purchase creation/listing returned an upstream Purchase.status
-validation error. These records have not been represented as a successful purchase
-import. Resolve provider behavior or obtain a valid sandbox purchase before marking
-the live Nessie release check passed. The current verified API origin is
-`https://prod-api.nessieisreal.com`; remove any old Railway NESSIE_BASE_URL override.
+Clean Nessie setup now creates a completed synthetic purchase and imports it via
+Railway. Use `purchase_date` and explicit `status: completed` when creating purchases;
+`transaction_date` is rejected as an extra creation field. The original malformed
+account was preserved, and the demo now binds a separate clean customer/account.
+See NESSIE_BLOCKER.md and live-nessie-checks.json. API origin:
+`https://prod-api.nessieisreal.com`.
 
 ### Provider verification — 2026-10-17
 
@@ -276,8 +277,8 @@ Migration 002 was applied successfully to the live database with verified TLS.
 Follow-up deployment verification: receipt upload/read-back and live Gemini extraction
 passed (EXTRACTED, USD 300.00). After the API changed instance, the existing uploaded
 receipt retained its original checksum: persistence across redeployment passed.
-The Nessie purchase-listing HTTP 400 remains reproducible; the complete live bank-to-
-simulated-refund release check remains pending. See VERIFICATION.md for current results.
+The old account remains malformed; clean-customer purchase creation and import now
+pass. The complete live bank-to-simulated-refund release check remains pending. See VERIFICATION.md for current results.
 
 
 For an automated persistence gate, run `scripts/verify-live.mjs --documents

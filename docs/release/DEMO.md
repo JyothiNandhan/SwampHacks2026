@@ -3,6 +3,7 @@
 ## Verified today
 
 - Railway API, authenticated reads, database TLS and migrations.
+- Clean Nessie sandbox completed purchase creation and deployed transaction import.
 - Worker connectivity (synthetic itemless probe; no retailer or savings claim).
 - Private receipt upload, live Gemini extraction and unchanged file checksum after redeployment.
 - SerpApi returns priced observations; unknown identity/stock/shipping block automatic savings.
@@ -51,8 +52,8 @@ simulated submission → completed correlated deposits → simulated refund conf
 Provider HTTP responses are fixtures; PostgreSQL persistence and worker execution are
 real. Label this **offline replay with simulated reimbursements** in the presentation.
 
-The live equivalent is not passed while Nessie purchase listing returns HTTP 400.
-Use NESSIE_BLOCKER.md for the exact failure and provider-side resolution. A complete
+The clean sandbox purchase import now passes; the full live equivalent remains
+unverified. NESSIE_BLOCKER.md records the corrected creation fields. A complete
 live run additionally needs a fresh exact-product offer with verified model identity,
 condition, shipping and stock. A search result alone cannot establish eligibility.
 

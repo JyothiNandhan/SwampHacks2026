@@ -182,9 +182,8 @@ See [the release handoff](docs/release/HANDOFF.md),
 [measured synthetic receipt evaluation](docs/release/receipt-evaluation.json).
 Run `pnpm check` and `pnpm --filter @moneyback/api test:release`.
 
-**Deployment remains pending.** No Railway project exists yet. Live provider tests,
-deployed API logs/screenshots and Railway release verification are required before
-marking T20–T25 fully complete or passing the T24 release gate.
+**Railway API and worker are deployed.** Full live provider checks and redacted
+deployment logs/screenshots remain required before passing the final T24/T25 gate.
 
 
 ### Backend release status — October 17, 2026
@@ -192,7 +191,8 @@ marking T20–T25 fully complete or passing the T24 release gate.
 Frontend development is paused. Backend local and real PostgreSQL checks pass;
 Railway receipt storage persists across API redeployments. See
 [the backend demo](docs/release/DEMO.md) and [measured verification](docs/release/VERIFICATION.md).
-T22/T24 live sign-off remains open: Nessie purchase listing returns a provider
-validation error, exact-product live retail eligibility still needs evidence, and
+Nessie sandbox purchase creation and deployed import now pass using a clean demo
+customer and explicit completed status. T22/T24 live sign-off remains open:
+exact-product live retail eligibility still needs evidence, and
 fresh Gemini evaluation currently returns HTTP 503. The existing offline refund
 smoke uses labeled fixture providers and simulated reimbursements.

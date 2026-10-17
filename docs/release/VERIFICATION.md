@@ -30,9 +30,10 @@ the tested pages lacked a usable current price and were correctly rejected.
 
 ## Outstanding release checks
 
-- Nessie sandbox purchase listing still returns HTTP 400 with a missing Purchase.status
-  validation error. Customer/account setup succeeded; purchase import has not passed.
-- The complete live Nessie-to-simulated-refund flow remains blocked by that upstream error.
+- Clean Nessie sandbox purchase creation and deployed import now pass. The old
+  malformed account is retained but excluded from the clean demo customer.
+- The complete live Nessie-to-simulated-refund flow still needs verified retail
+  evidence, fresh receipt extraction and completed correlated sandbox deposits.
   The deterministic API/worker/refund integration flow passes with mocked providers;
   it must remain labeled offline replay.
 
@@ -62,7 +63,19 @@ complete deployed live-provider release.
   individual request order and the boundary between live checks and offline replay.
 
 The supplied https://nessieisreal.com site publishes the same production API origin
-used by the application. It does not change the reproduced purchase validation
-failure. NESSIE_BLOCKER.md is the credential-free provider report.
+used by the application. Clean sandbox provisioning resolved the demo import blocker. NESSIE_BLOCKER.md
+records the diagnosis and corrected creation fields.
 - Unidentified SerpApi listings now receive distinct source-and-URL price-history
   keys; two separate products no longer share a `model:null` history stream.
+
+
+## Nessie sandbox resolution
+
+A fresh synthetic customer/checking account was provisioned without deleting older
+records. Purchase creation accepted `purchase_date` and explicit `status: completed`;
+it rejected `transaction_date` as an extra creation field. The completed USD 300
+synthetic purchase was read back, bound to the test user, and imported through the
+deployed authenticated sync route (HTTP 200, job SUCCEEDED, one transaction saved).
+No real money moved. See live-nessie-checks.json. Provider support is not needed to
+continue using this clean demo account. The original account's invalid records were
+not repaired, and the full receipt/retail/refund flow is still not claimed as passed.
