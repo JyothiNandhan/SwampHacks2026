@@ -6,5 +6,6 @@ RUN pnpm install --frozen-lockfile && pnpm build
 RUN mkdir -p /data/evidence && chown -R node:node /data
 USER node
 ENV NODE_ENV=production
+ENV NODE_EXTRA_CA_CERTS=/app/config/tigerdata-ca.pem
 ENV EVIDENCE_DIRECTORY=/data/evidence
 CMD ["pnpm", "--filter", "@moneyback/api", "start"]
