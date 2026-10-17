@@ -15,8 +15,173 @@
       "requestId": "req-..."
     }
   },
-  "routes": [],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "owner": "Rishav",
+      "responseSchema": "Health",
+      "errorSchema": "Error",
+      "security": "public",
+      "prefix": false
+    },
+    {
+      "method": "POST",
+      "path": "/sync/nessie",
+      "owner": "Rishav",
+      "responseSchema": "JobResponse",
+      "errorSchema": "Error",
+      "security": "user",
+      "requestSchema": "SyncRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/purchases",
+      "owner": "Rishav",
+      "responseSchema": "PurchasePage",
+      "errorSchema": "Error",
+      "security": "user"
+    },
+    {
+      "method": "GET",
+      "path": "/subscriptions",
+      "owner": "Rishav",
+      "responseSchema": "SubscriptionPage",
+      "errorSchema": "Error",
+      "security": "user"
+    },
+    {
+      "method": "GET",
+      "path": "/purchases/:purchaseId/timeline",
+      "owner": "Rishithaaa",
+      "responseSchema": "EventPage",
+      "errorSchema": "Error",
+      "security": "user"
+    },
+    {
+      "method": "POST",
+      "path": "/receipts/ingest",
+      "owner": "Anish",
+      "responseSchema": "ReceiptResponse",
+      "errorSchema": "Error",
+      "security": "user",
+      "requestSchema": "ReceiptIngestRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/receipts/match",
+      "owner": "Anish",
+      "responseSchema": "MatchResponse",
+      "errorSchema": "Error",
+      "security": "user",
+      "requestSchema": "ReceiptMatchRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/receipts/:receiptId/consolidate",
+      "owner": "Anish",
+      "responseSchema": "ReceiptGroupResponse",
+      "errorSchema": "Error",
+      "security": "user",
+      "requestSchema": "ReceiptConsolidateRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/policies/extract",
+      "owner": "Anish",
+      "responseSchema": "PolicyResponse",
+      "errorSchema": "Error",
+      "security": "user",
+      "requestSchema": "PolicyExtractRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/billing/compare",
+      "owner": "Anish",
+      "responseSchema": "BillingResponse",
+      "errorSchema": "Error",
+      "security": "user",
+      "requestSchema": "BillingCompareRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/offers/:purchaseId",
+      "owner": "Nandhan",
+      "responseSchema": "OfferPage",
+      "errorSchema": "Error",
+      "security": "user"
+    },
+    {
+      "method": "POST",
+      "path": "/monitoring/prices/run",
+      "owner": "Nandhan",
+      "responseSchema": "JobResponse",
+      "errorSchema": "Error",
+      "security": "admin/demo",
+      "requestSchema": "MonitorRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/opportunities",
+      "owner": "Rishithaaa",
+      "responseSchema": "OpportunityPage",
+      "errorSchema": "Error",
+      "security": "user"
+    },
+    {
+      "method": "POST",
+      "path": "/recovery/cases",
+      "owner": "Rishithaaa",
+      "responseSchema": "CaseResponse",
+      "errorSchema": "Error",
+      "security": "user",
+      "requestSchema": "RecoveryCaseRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/recovery/cases/:caseId/approve",
+      "owner": "Rishithaaa",
+      "responseSchema": "CaseResponse",
+      "errorSchema": "Error",
+      "security": "user",
+      "requestSchema": "ApprovalRequest"
+    },
+    {
+      "method": "POST",
+      "path": "/refunds/reconcile",
+      "owner": "Rishithaaa",
+      "responseSchema": "RefundResponse",
+      "errorSchema": "Error",
+      "security": "internal",
+      "requestSchema": "RefundReconcileRequest"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications",
+      "owner": "Rishithaaa",
+      "responseSchema": "NotificationPage",
+      "errorSchema": "Error",
+      "security": "user"
+    },
+    {
+      "method": "GET",
+      "path": "/deadlines",
+      "owner": "Rishithaaa",
+      "responseSchema": "DeadlinePage",
+      "errorSchema": "Error",
+      "security": "user"
+    }
+  ],
+  "contractVersion": "1.0.0",
   "responseSingle": {
     "data": {}
-  }
+  },
+  "deferredRoutes": [
+    {
+      "method": "POST",
+      "path": "/captures/extension",
+      "gate": "F01",
+      "owner": "Rishav + Anish"
+    }
+  ]
 }

@@ -1,0 +1,14 @@
+{
+  "id": "opportunity-1",
+  "purchaseId": "purchase-1",
+  "type": "PRICE_DROP",
+  "estimatedSavingsCents": 5000,
+  "currency": "USD",
+  "status": "REVIEW",
+  "eligibility": "REVIEW_REQUIRED",
+  "evidenceIds": [
+    "evidence-1"
+  ],
+  "deadlineAt": "2026-11-01T12:00:00Z",
+  "createdAt": "2026-10-17T12:00:00Z"
+}

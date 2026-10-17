@@ -1,0 +1,24 @@
+{
+  "id": "purchase-1",
+  "transactionId": "transaction-1",
+  "receiptIds": [
+    "receipt-1"
+  ],
+  "merchantName": "Demo Retailer",
+  "orderNumber": "demo-order-1",
+  "purchasedAt": "2026-10-17T12:00:00Z",
+  "amountCents": 30000,
+  "currency": "USD",
+  "matchStatus": "MATCHED",
+  "items": [
+    {
+      "name": "Demo Watch",
+      "brand": "Demo",
+      "model": "DW-1",
+      "sku": "demo-watch",
+      "gtin": null,
+      "quantity": 1,
+      "unitPriceCents": 30000
+    }
+  ]
+}

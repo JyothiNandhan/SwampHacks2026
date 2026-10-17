@@ -1,0 +1,10 @@
+{
+  "id": "evidence-1",
+  "sourceType": "RECEIPT",
+  "sourceId": "receipt-1",
+  "category": "PURCHASE_PROOF",
+  "acquisitionMethod": "USER_UPLOAD",
+  "rawUrl": null,
+  "checksum": null,
+  "createdAt": "2026-10-17T12:00:00Z"
+}

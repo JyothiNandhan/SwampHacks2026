@@ -1,0 +1,11 @@
+{
+  "id": "receipt-1",
+  "source": "PHOTO",
+  "merchantName": "Demo Retailer",
+  "orderNumber": "demo-order-1",
+  "purchasedAt": "2026-10-17T12:00:00Z",
+  "totalCents": 30000,
+  "currency": "USD",
+  "originalFileId": "private/demo-receipt.png",
+  "extractionStatus": "EXTRACTED"
+}

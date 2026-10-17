@@ -1,0 +1,10 @@
+{
+  "id": "event-1",
+  "entityType": "PURCHASE",
+  "entityId": "purchase-1",
+  "eventType": "PURCHASE_MATCHED",
+  "eventPayload": {
+    "receiptId": "receipt-1"
+  },
+  "createdAt": "2026-10-17T12:00:00Z"
+}

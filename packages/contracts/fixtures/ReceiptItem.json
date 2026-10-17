@@ -1,0 +1,9 @@
+{
+  "name": "Demo Watch",
+  "brand": "Demo",
+  "model": "DW-1",
+  "sku": "demo-watch",
+  "gtin": null,
+  "quantity": 1,
+  "unitPriceCents": 30000
+}

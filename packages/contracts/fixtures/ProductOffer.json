@@ -1,0 +1,16 @@
+{
+  "id": "offer-1",
+  "source": "FIXTURE",
+  "retailerName": "Demo Retailer",
+  "productName": "Demo Watch",
+  "sku": "demo-watch",
+  "model": "DW-1",
+  "gtin": null,
+  "condition": "NEW",
+  "priceCents": 25000,
+  "shippingCents": 0,
+  "currency": "USD",
+  "inStock": true,
+  "productUrl": "https://example.com/demo-watch",
+  "observedAt": "2026-10-17T12:00:00Z"
+}
