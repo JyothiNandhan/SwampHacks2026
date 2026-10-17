@@ -5,15 +5,15 @@ import { loadConfig } from './config.js';
 import { NessieError } from './modules/banking/nessie-client.js';
 
 const config = loadConfig({ NODE_ENV: 'test' });
-test('health works without credentials; financial routes remain absent with canonical 404s', async () => {
+test('health works without credentials; financial routes fail closed without credentials', async () => {
   const app = buildApp({ config, logger: false });
   try {
     const response = await app.inject({ method: 'GET', url: '/health' });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({ status: 'ok', service: 'moneyback-api' });
     const missing = await app.inject('/api/v1/purchases?key=secret');
-    expect(missing.statusCode).toBe(404);
-    expect(ErrorSchema.parse(missing.json()).error.code).toBe('NOT_FOUND');
+    expect(missing.statusCode).toBe(401);
+    expect(ErrorSchema.parse(missing.json()).error.code).toBe('UNAUTHORIZED');
     expect(missing.body).not.toContain('secret');
     expect(app.database).toBeNull();
     expect(app.nessie).toBeNull();

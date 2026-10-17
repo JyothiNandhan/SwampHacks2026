@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type pg from 'pg';
 import { z } from 'zod';
 
@@ -89,7 +90,7 @@ export function createNessieImporter(options: { client: NessieReader; store: Nes
       })),
       purchases: details.flatMap(({ account, purchases }) => purchases.map(purchase => normalizePurchase(account, purchase, merchants))),
       bills: details.flatMap(({ account, bills }) => bills.map(bill => normalizeBill(account, bill))),
-      deposits: details.flatMap(({ account, deposits }) => deposits.map(deposit => normalizeDeposit(account, deposit)))
+      deposits: details.flatMap(({ account, deposits }) => deposits.filter(deposit => deposit.status === 'completed').map(deposit => normalizeDeposit(account, deposit)))
     };
     return options.store.saveImport(userId, batch);
   };
@@ -100,6 +101,7 @@ export class TigerDataNessieStore implements NessieImportStore {
   constructor(private readonly pool: pg.Pool) {}
 
   async saveImport(userId: string, batch: NessieImportBatch): Promise<NessieImportCounts> {
+    const importId = randomUUID();
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
@@ -114,7 +116,7 @@ export class TigerDataNessieStore implements NessieImportStore {
         VALUES ($1,$2,'USER',$1,'NESSIE_CUSTOMER_IMPORTED',$3::jsonb)
         ON CONFLICT (user_id,idempotency_key) DO UPDATE SET event_payload=EXCLUDED.event_payload`,
       [userId, `nessie:customer:${batch.customer.externalCustomerId}`, JSON.stringify({
-        externalCustomerId: batch.customer.externalCustomerId
+        externalCustomerId: batch.customer.externalCustomerId, importId
       })]);
 
       const accountIds = new Map<string, string>();
@@ -139,6 +141,11 @@ export class TigerDataNessieStore implements NessieImportStore {
           purchase.merchantName, purchase.merchantId, purchase.amountCents, purchase.occurredAt]);
       }
 
+      // Immutable import evidence plus the current customer marker distinguishes completed
+      // deposits from stale/pending legacy rows without deleting audit history.
+      await client.query(`INSERT INTO events(user_id,idempotency_key,entity_type,entity_id,event_type,event_payload)
+        VALUES($1,$2,'USER',$1,'NESSIE_IMPORT_COMPLETED',$3)`,
+        [userId,`nessie:import:${importId}`,JSON.stringify({importId,customerId:batch.customer.externalCustomerId})]);
       for (const deposit of batch.deposits) {
         await client.query(`INSERT INTO deposits
           (user_id,account_id,nessie_deposit_id,amount_cents,currency,occurred_at,reference,simulated)
@@ -150,6 +157,12 @@ export class TigerDataNessieStore implements NessieImportStore {
           deposit.amountCents, deposit.occurredAt, deposit.reference]);
       }
 
+      for (const deposit of batch.deposits) {
+        await client.query(`INSERT INTO events(user_id,idempotency_key,entity_type,entity_id,event_type,event_payload)
+          VALUES($1,$2,'ACCOUNT',$3,'NESSIE_DEPOSIT_IMPORTED_COMPLETED',$4)`,
+          [userId,`nessie:completed-deposit:${importId}:${deposit.externalDepositId}`,requireAccount(accountIds,deposit.accountExternalId),
+            JSON.stringify({depositId:deposit.externalDepositId,amountCents:deposit.amountCents,simulated:true,importId,customerId:batch.customer.externalCustomerId})]);
+      }
       for (const bill of batch.bills) {
         await upsertBill(client, userId, requireAccount(accountIds, bill.accountExternalId), bill);
       }

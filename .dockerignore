@@ -1,0 +1,10 @@
+.git
+**/node_modules
+**/dist
+.env
+.env.*
+!.env.example
+**/.railway
+**/coverage
+**/.DS_Store
+**/*.log

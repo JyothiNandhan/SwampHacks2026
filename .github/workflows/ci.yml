@@ -1,7 +1,7 @@
 name: MoneyBack Backend CI
 on:
   push:
-    branches: [main, 'feature/**']
+    branches: [main, Anish, 'feature/**']
   pull_request:
 permissions:
   contents: read
@@ -40,4 +40,4 @@ jobs:
           TEST_DATABASE_URL: postgres://moneyback:ci-only-password@localhost:5432/moneyback_test
         run: |
           pnpm --filter @moneyback/db exec tsx src/postgres-check.ts
-          pnpm --filter @moneyback/api exec vitest run src/database.test.ts
+          pnpm --filter @moneyback/api exec vitest run src/database.test.ts src/integration/backend.test.ts

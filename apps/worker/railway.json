@@ -1,5 +1,5 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
-  "build": { "buildCommand": "pnpm --filter @moneyback/contracts build && pnpm --filter @moneyback/worker build" },
+  "build": { "builder": "DOCKERFILE", "dockerfilePath": "Dockerfile" },
   "deploy": { "startCommand": "pnpm --filter @moneyback/worker start", "restartPolicyType": "ON_FAILURE", "restartPolicyMaxRetries": 5 }
 }

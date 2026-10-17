@@ -1,3 +1,8 @@
+import { BackendService } from './integration/service.js';
+import { registerBackendRoutes } from './integration/routes.js';
+import { loadIntegrationConfig } from './integration/config.js';
+import { ApiError } from './integration/security.js';
+import { ExtractionError } from './modules/documents/extractor.js';
 import Fastify, { LogController } from 'fastify';
 import type pg from 'pg';
 import { ErrorSchema, HealthSchema } from '@moneyback/contracts';
@@ -13,7 +18,7 @@ declare module 'fastify' {
   }
 }
 
-export function buildApp(options: { config?: AppConfig; logger?: boolean } = {}) {
+export function buildApp(options: { config?: AppConfig; logger?: boolean; service?: BackendService; database?: pg.Pool } = {}) {
   const config = options.config ?? loadConfig();
   const app = Fastify({
     // Omit URL, headers and bodies entirely: Nessie keys and document data can occur in them.
@@ -25,7 +30,7 @@ export function buildApp(options: { config?: AppConfig; logger?: boolean } = {})
     requestTimeout: 30000,
     bodyLimit: 1024 * 1024
   });
-  const database = config.databaseUrl ? createDatabasePool(config.databaseUrl) : null;
+  const database = options.database ?? (config.databaseUrl ? createDatabasePool(config.databaseUrl) : null);
   const nessie = config.nessie.apiKey ? new NessieClient({ baseUrl: config.nessie.baseUrl, apiKey: config.nessie.apiKey }) : null;
   app.decorate('config', config);
   app.decorate('database', database);
@@ -34,6 +39,7 @@ export function buildApp(options: { config?: AppConfig; logger?: boolean } = {})
   app.addHook('onClose', async () => { await database?.end(); });
 
   app.setErrorHandler((error, request, reply) => {
+    if(error instanceof ApiError || error instanceof ExtractionError) return reply.code(error.statusCode).send(ErrorSchema.parse({error:{code:error.code,message:error.code,requestId:request.id}}));
     const upstream = error instanceof NessieError;
     const reportedStatus = error instanceof Error && 'statusCode' in error && typeof error.statusCode === 'number' ? error.statusCode : 500;
     const status = upstream ? (error.code === 'NESSIE_TIMEOUT' ? 504 : 502) :
@@ -51,5 +57,7 @@ export function buildApp(options: { config?: AppConfig; logger?: boolean } = {})
   } })));
   // Liveness only: no credentials, database query, or Nessie call required.
   app.get('/health', async () => HealthSchema.parse({ status: 'ok', service: 'moneyback-api' }));
+  const integration = config.integration ?? loadIntegrationConfig({ NODE_ENV: config.nodeEnv });
+  registerBackendRoutes(app,integration,options.service ?? (database ? new BackendService(database,integration,nessie) : null));
   return app;
 }

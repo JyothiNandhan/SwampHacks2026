@@ -15,7 +15,7 @@ function fixtureReader(): NessieReader {
     '/accounts/account-1/bills': [{ _id: 'bill-1', payee: 'Stream Co', nickname: 'Video', payment_amount: 12.99,
       payment_date: '2026-10-01', recurring_date: 1 }],
     '/accounts/account-1/deposits': [{ _id: 'deposit-1', amount: 25, transaction_date: '2026-10-17',
-      description: 'Simulated refund' }],
+      description: 'Simulated refund', status: 'completed' }],
     '/merchants/merchant-1': { _id: 'merchant-1', name: 'Best Buy' }
   };
   return { async get<T extends z.ZodType>(path: string, schema: T): Promise<z.output<T>> {

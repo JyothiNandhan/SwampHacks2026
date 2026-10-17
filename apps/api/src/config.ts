@@ -1,3 +1,4 @@
+import { loadIntegrationConfig, type IntegrationConfig } from './integration/config.js';
 import { z } from 'zod';
 
 const optionalSecret = z.preprocess(value => value === '' ? undefined : value, z.string().trim().min(1).optional());
@@ -25,6 +26,7 @@ const envSchema = z.object({
 });
 
 export interface AppConfig {
+  readonly integration?: IntegrationConfig;
   readonly nodeEnv: 'development' | 'test' | 'production';
   readonly port: number;
   readonly databaseUrl?: string;
@@ -40,6 +42,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   }
   const value = result.data;
   return Object.freeze({
+    integration: loadIntegrationConfig(env),
     nodeEnv: value.NODE_ENV, port: value.PORT, databaseUrl: value.DATABASE_URL,
     nessie: Object.freeze({ baseUrl: value.NESSIE_BASE_URL, apiKey: value.NESSIE_API_KEY, accountId: value.NESSIE_ACCOUNT_ID })
   });

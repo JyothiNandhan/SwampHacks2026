@@ -168,3 +168,20 @@ Each task is delivered as a separate commit/stacked PR. Merge T01, then T02, the
 ## T04 implementation handoff
 
 `apps/api` now has typed environment configuration, a lazy database pool with shutdown cleanup, canonical HTTP errors, and a validated GET-only Nessie transport. `/health` remains credential-free in development; production startup requires `DATABASE_URL` and `NESSIE_API_KEY`. No financial routes are registered. See [the server and banking handoff](apps/api/src/modules/banking/README.md) for configuration, service usage, error codes and verification. T08 can build provider adapters/imports on this foundation; live provider connectivity remains to be verified with configured credentials.
+
+## T20–T25 integration handoff (Anish branch)
+
+The backend now registers the canonical API routes with provisioned per-user
+credentials, ownership checks, private evidence retention and OpenAPI documentation.
+The worker executes database-owned price jobs and opt-in schedules; refund
+reconciliation requires completed, correlated simulated Nessie deposits.
+
+See [the release handoff](docs/release/HANDOFF.md),
+[Postman collection](docs/release/MoneyBack.postman_collection.json),
+[OpenAPI specification](docs/release/openapi.json), and
+[measured synthetic receipt evaluation](docs/release/receipt-evaluation.json).
+Run `pnpm check` and `pnpm --filter @moneyback/api test:release`.
+
+**Deployment remains pending.** No Railway project exists yet. Live provider tests,
+deployed API logs/screenshots and Railway release verification are required before
+marking T20–T25 fully complete or passing the T24 release gate.
