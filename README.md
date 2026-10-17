@@ -161,3 +161,7 @@ pnpm db:migrate           # explicitly exported DATABASE_URL required
 Read [the contract handoff](packages/contracts/README.md) and [database migration instructions](packages/db/README.md) before implementing downstream modules. The route registry is authoritative over the earlier target route examples. Financial routes, provider clients, authentication, business workflows and client applications remain in their scheduled tasks.
 
 Each task is delivered as a separate commit/stacked PR. Merge T01, then T02, then T03 after required CI and review; branch pushes alone do not mark prerequisites MERGED. Migration and contract fixture checks do not represent a live Tiger Data deployment or an integrated recovery workflow.
+
+## T04 implementation handoff
+
+`apps/api` now has typed environment configuration, a lazy database pool with shutdown cleanup, canonical HTTP errors, and a validated GET-only Nessie transport. `/health` remains credential-free in development; production startup requires `DATABASE_URL` and `NESSIE_API_KEY`. No financial routes are registered. See [the server and banking handoff](apps/api/src/modules/banking/README.md) for configuration, service usage, error codes and verification. T08 can build provider adapters/imports on this foundation; live provider connectivity remains to be verified with configured credentials.

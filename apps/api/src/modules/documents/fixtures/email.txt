@@ -1,0 +1,6 @@
+Synthetic receipt — Demo Retailer
+Order demo-order-1
+Purchased 2026-10-17T12:00:00Z
+Demo Watch, brand Demo, model DW-1, SKU demo-watch
+Quantity 1; USD 300.00 each
+Total USD 300.00

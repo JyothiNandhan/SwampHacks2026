@@ -1,14 +1,28 @@
 import { buildApp } from './app.js';
+import { loadConfig } from './config.js';
 
-const app = buildApp();
-const port = Number(process.env.PORT ?? 3001);
-if (!Number.isInteger(port) || port < 1 || port > 65535) {
-  throw new Error('PORT must be an integer between 1 and 65535');
+async function start() {
+  // Validate before allocating resources or opening the listener.
+  const config = loadConfig();
+  const app = buildApp({ config });
+  let closing = false;
+  const shutdown = async () => {
+    if (closing) return;
+    closing = true;
+    try { await app.close(); }
+    catch { app.log.error('Server shutdown failed'); process.exitCode = 1; }
+  };
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
+  try { await app.listen({ port: config.port, host: '0.0.0.0' }); }
+  catch {
+    app.log.error('Server startup failed');
+    process.exitCode = 1;
+    await shutdown();
+  }
 }
-for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.once(signal, () => { void app.close(); });
-}
-app.listen({ port, host: '0.0.0.0' }).catch((err: unknown) => {
-  app.log.error(err);
+start().catch(() => {
+  // Invalid configuration can contain credentials: never print the original error.
+  console.error('API startup failed. Check environment configuration.');
   process.exitCode = 1;
 });

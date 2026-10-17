@@ -14,7 +14,8 @@
     "typescript": "catalog:",
     "@types/node": "catalog:",
     "tsx": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@types/pg": "catalog:"
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",

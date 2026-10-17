@@ -87,6 +87,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.15.30
+      '@types/pg':
+        specifier: 'catalog:'
+        version: 8.15.5
       tsx:
         specifier: 'catalog:'
         version: 4.20.6
