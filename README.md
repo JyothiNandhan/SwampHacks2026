@@ -16,7 +16,7 @@ remaining Gate 3 and later integration work.
 | **Rishithaaa** | `apps/api/src/modules/recovery/`, `deadlines/`, `timeline/`, `notifications/` | Recovery Action Center API, missing refund checks, approvals/state machine, purchase timeline, textbook/gift-card/rental reminders |
 | **Nandhan** | `apps/api/src/modules/retail/`, `opportunities/`, `apps/worker/` | Best Buy API, Bright Data dataset scrapers, exact SKU matching, price observations, price drops and scheduled monitors |
 
-**Frontend:** postponed until the backend release gate. Later assign a frontend owner and start `apps/web/` on a separate branch. No frontend feature should block backend progress.
+**Frontend:** the initial Next.js dashboard is now implemented in `apps/web/` on `frontend/moneyback-dashboard`. Run `pnpm --filter @moneyback/web dev` to explore the labeled demo or connect a per-user API token. Live purchases, opportunities and receipt extraction are connected; Auth0, case/notification history and the full Nessie bank-to-refund gate remain pending.
 
 ## Ground rules
 - One shared repository and one root `pnpm-lock.yaml`. Do **not** commit `package-lock.json`, `yarn.lock`, or a second lockfile.
