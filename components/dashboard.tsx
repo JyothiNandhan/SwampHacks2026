@@ -4,7 +4,7 @@ import { Icon } from './icon';
 import { receiptUploadFormat } from '../lib/receipt-upload';
 import { demoPurchases, money, type PurchaseView } from '../lib/demo';
 type Section = 'Overview' | 'Purchases' | 'Opportunities' | 'Recovery center' | 'Activity';
-type Modal = 'connect' | 'upload' | 'notifications' | 'help' | PurchaseView | null;
+type Modal = 'connect' | 'upload' | 'notifications' | 'help' | 'gmail' | PurchaseView | null;
 interface Opportunity {
     id: string;
     purchaseId: string | null;
@@ -23,6 +23,8 @@ export function Dashboard() {
     const [section, setSection] = useState<Section>('Overview');
     const [modal, setModal] = useState<Modal>(null);
     const [connected, setConnected] = useState(false);
+    const [auth0Enabled,setAuth0Enabled]=useState(false);
+    const [gmail,setGmail]=useState({configured:false,connected:false});
     const [purchases, setPurchases] = useState<PurchaseView[]>(demoPurchases);
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [cases, setCases] = useState<Case[]>([]);
@@ -61,7 +63,7 @@ export function Dashboard() {
         setCases([]);
         setConnected(true);
     }
-    useEffect(() => { let active = true; request('/api/session').then(async (s) => { if (s.connected && active) {
+    useEffect(() => { let active = true; request('/api/session').then(async (s) => { setAuth0Enabled(!!s.auth0Configured); if (s.connected && active) {
         try {
             await loadLive();
         }
@@ -88,7 +90,8 @@ export function Dashboard() {
         setBusy(false);
     } }
     async function disconnect() { try {
-        await request('/api/session', { method: 'DELETE' });
+        const result=await request('/api/session', { method: 'DELETE' });
+        if(result.logoutUrl){window.location.assign('/auth/logout');return;}
         setConnected(false);
         setPurchases(demoPurchases);
         setOpportunities([]);
@@ -122,6 +125,27 @@ export function Dashboard() {
         if (fileInput.current)
             fileInput.current.value = '';
     } }
+    useEffect(()=>{if(connected)void request('/api/email/status').then(result=>setGmail(result.data)).catch(()=>{});},[connected]);
+    useEffect(()=>{const url=new URL(window.location.href);const result=url.searchParams.get('gmail');if(result){url.searchParams.delete('gmail');window.history.replaceState({},'',url.pathname+url.search);setModal('gmail');notify(result==='connected'?'Gmail connected. Choose Import recent receipts to continue.':'Gmail was not connected. Please try again.');}},[]);
+    async function gmailAction(action:'connect'|'disconnect'|'import'){
+        setBusy(true);setError('');
+        try{
+            if(action==='import'){
+                let imported=0;
+                for(let batch=0;batch<5;batch++){
+                    const result=await request('/api/email/import',{method:'POST'});
+                    imported+=result.data.imported;
+                    if(result.data.failed)throw new Error(result.data.errorMessage??'An email could not be imported.');
+                    if(!result.data.hasMore)break;
+                }
+                notify(imported?`${imported} Gmail receipt${imported===1?'':'s'} extracted. Matching to purchases is a separate step.`:'No new supported receipt emails found in the recent search.');
+            }else{
+                const result=await request(`/api/email/${action}`,{method:'POST'});
+                if(action==='connect'){window.location.assign(result.data.authorizationUrl);return;}
+                setGmail(value=>({...value,connected:false}));notify('Gmail disconnected. Previously imported receipts remain in your account.');
+            }
+        }catch(e){setError((e as Error).message);}finally{setBusy(false);}
+    }
     function selectSection(value: Section) { setSection(value); setQuery(''); setFilter('All purchases'); setError(''); }
     return <div className="app-shell">
  <aside className="sidebar"><a href="/" className="brand" aria-label="MoneyBack home"><span className="brand-mark">m<span>↗</span></span><span>moneyback<span className="brand-dot">.</span></span></a><div className="workspace"><span className="workspace-avatar">M</span><div>Personal workspace<small>Your everyday, protected</small></div><span className="chevrons">⌃<br />⌄</span></div><div className="nav-label">WORKSPACE</div><nav aria-label="Main navigation">{(['Overview', 'Purchases', 'Opportunities', 'Recovery center', 'Activity'] as Section[]).map((name, i) => <button key={name} className={section === name ? 'nav-item active' : 'nav-item'} onClick={() => selectSection(name)}><Icon name={['grid', 'bag', 'sparkle', 'shield', 'activity'][i]}/><span>{name}</span>{name === 'Opportunities' && opportunitiesCount > 0 && <b>{opportunitiesCount}</b>}</button>)}</nav><div className="sidebar-bottom"><div className="protection-mini"><span className="mini-orbit"><Icon name="shield" size={23}/></span><strong>A little peace of mind.</strong><p>Your purchases deserve<br />a second look.</p><button onClick={() => setModal('help')}>How MoneyBack works <Icon name="arrow" size={15}/></button></div><button className="nav-item" onClick={() => setModal('help')}><Icon name="help"/>Help & getting started</button><button className="profile" onClick={() => setModal('connect')}><span className="avatar">{connected ? 'YO' : 'DE'}</span><span>{connected ? 'Your account' : 'Demo explorer'}<small>{connected ? 'Live workspace' : 'Sample workspace'}</small></span><Icon name="settings" size={18}/></button></div></aside>
@@ -142,9 +166,10 @@ export function Dashboard() {
         setModal(null);
         setToken('');
     } }}><div className="modal-header"><span className="brand-dot">✧</span><button className="icon-button" aria-label="Close dialog" onClick={() => { setModal(null); setToken(''); }}><Icon name="close"/></button></div>
- {modal === 'connect' && <><span className="eyebrow">YOUR WORKSPACE</span><h2>{connected ? 'You’re connected.' : 'Make room for your money.'}</h2><p>{connected ? 'Your account data comes directly from the secured MoneyBack API.' : 'Connect with your provisioned per-user access token. It stays in a secure HTTP-only session cookie and expires after one hour.'}</p>{connected ? <button className="secondary" onClick={() => void disconnect()}><Icon name="logout" size={17}/> Disconnect account</button> : <form onSubmit={connect}><label className="field-label" htmlFor="access-token">Account access token</label><input id="access-token" className="field-input" type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="Paste your per-user token" autoComplete="off" required/><small className="form-help">Use your account token, never a provider API key.</small><button className="primary wide" disabled={busy}>{busy ? 'Connecting…' : 'Connect securely'}<Icon name="arrow" size={17}/></button></form>}</>}
- {modal === 'upload' && <><span className="eyebrow">BUILD THE EVIDENCE</span><h2>A receipt is a good start.</h2><p>Add a receipt to extract item details. Matching it to a purchase is a separate review step.</p><label className="field-label" htmlFor="receipt-source">Receipt source (detected from your file)</label><select id="receipt-source" className="field-input" value={uploadSource} onChange={e => setUploadSource(e.target.value)}><option value="EMAIL">Email receipt</option><option value="PHOTO">Receipt photo</option><option value="PDF">PDF receipt</option></select><input ref={fileInput} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,application/pdf,text/plain,text/html" onChange={e => { if (e.target.files?.[0])
+ {modal === 'connect' && <><span className="eyebrow">YOUR WORKSPACE</span><h2>{connected ? 'You’re connected.' : 'Make room for your money.'}</h2>{auth0Enabled && !connected && <a className="primary wide" href="/auth/login">Sign in / Create account <Icon name="arrow" size={17}/></a>}<p>{connected ? 'Your account data comes directly from the secured MoneyBack API.' : auth0Enabled ? 'Sign in to a private workspace, or use a provisioned access token below. New accounts start with no purchases.' : 'Connect with your provisioned per-user access token. It stays in a secure HTTP-only session cookie and expires after one hour.'}</p>{connected ? <button className="secondary" onClick={() => void disconnect()}><Icon name="logout" size={17}/> Disconnect account</button> : <form onSubmit={connect}><label className="field-label" htmlFor="access-token">Account access token</label><input id="access-token" className="field-input" type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="Paste your per-user token" autoComplete="off" required/><small className="form-help">Use your account token, never a provider API key.</small><button className="primary wide" disabled={busy}>{busy ? 'Connecting…' : 'Connect securely'}<Icon name="arrow" size={17}/></button></form>}</>}
+ {modal === 'upload' && <><span className="eyebrow">BUILD THE EVIDENCE</span><h2>A receipt is a good start.</h2><p>Add a receipt to extract item details. Matching it to a purchase is a separate review step.</p>{connected && <button className="text-button" onClick={()=>setModal('gmail')}>Connect or import Gmail receipts <Icon name="arrow" size={15}/></button>}<label className="field-label" htmlFor="receipt-source">Receipt source (detected from your file)</label><select id="receipt-source" className="field-input" value={uploadSource} onChange={e => setUploadSource(e.target.value)}><option value="EMAIL">Email receipt</option><option value="PHOTO">Receipt photo</option><option value="PDF">PDF receipt</option></select><input ref={fileInput} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,application/pdf,text/plain,text/html" onChange={e => { if (e.target.files?.[0])
         void upload(e.target.files[0]); }}/><button className="upload-zone" disabled={busy || !connected} onClick={() => fileInput.current?.click()}><Icon name="upload" size={30}/><strong>{busy ? 'Extracting your receipt…' : 'Choose a receipt'}</strong><span>JPG, PNG, WebP, PDF or text · up to 4 MB</span></button>{!connected && <button className="primary wide" onClick={() => setModal('connect')}>Connect to upload <Icon name="arrow" size={17}/></button>}<p className="form-help">PDFs use PDF extraction, images use photo extraction, and text or HTML uses email extraction. Files are private to your account. Keep this window open while extraction finishes.</p></>}
+ {modal === 'gmail' && <><span className="eyebrow">YOUR RECEIPTS, TOGETHER</span><h2>Bring receipts from Gmail.</h2><p>Connect with Google, then import likely receipts from the last 30 days. Each import checks up to 20 recent matching emails and extracts up to five new receipts. Nothing is sent or deleted.</p>{!connected ? <button className="primary wide" onClick={()=>setModal('connect')}>Sign in first</button> : !gmail.configured ? <p className="sample-note">Gmail connection is not enabled for this deployment yet. Manual receipt upload is available.</p> : gmail.connected ? <><button className="primary wide" disabled={busy} onClick={()=>void gmailAction('import')}>{busy?'Importing receipts…':'Import recent receipts'}</button><button className="text-button" disabled={busy} onClick={()=>void gmailAction('disconnect')}>Disconnect Gmail</button></> : <button className="primary wide" disabled={busy} onClick={()=>void gmailAction('connect')}>{busy?'Connecting…':'Connect Gmail with Google'}</button>}<p className="form-help">Google grants read-only mailbox access. Only selected receipt content is saved and sent to our extraction provider. Importing does not create bank transactions or approve recovery cases. This connection does not monitor the inbox in the background.</p></>}
  {modal === 'help' && <><span className="eyebrow">A LITTLE OVERSIGHT GOES A LONG WAY</span><h2>From purchase to possibility.</h2><div className="help-steps">{[['receipt', 'Bring your receipts', 'Add evidence to establish exactly what you bought.'], ['sparkle', 'Spot the possibilities', 'Review price observations and protection windows.'], ['shield', 'Make your move', 'Check the evidence and approve each recovery step yourself.']].map(([icon, title, text], i) => <div key={title}><span className="stat-icon mint"><Icon name={icon}/></span><div><strong>{i + 1}. {title}</strong><p>{text}</p></div></div>)}</div><p className="sample-note">This is a sandbox. Reimbursements are simulated; recovery is never guaranteed.</p></>}
  {modal === 'notifications' && <><span className="eyebrow">ON YOUR RADAR</span><h2>{connected ? 'Keep an eye on your purchases.' : 'A couple of good reasons to look.'}</h2><p>{connected ? 'Live notification history is not connected in this view yet. Your purchase data is available in the Purchases tab.' : 'These sample alerts show how MoneyBack helps you stay a step ahead.'}</p>{!connected && demoPurchases.slice(0, 2).map(p => <button key={p.id} className="notification-item" onClick={() => setModal(p)}><Icon name={p.icon}/><span><strong>{p.name}</strong><small>{p.status} · {money(p.saving)} potential</small></span><Icon name="arrow" size={16}/></button>)}</>}
  {modal && typeof modal === 'object' && <><span className={`product-art detail-art ${modal.icon}`}><Icon name={modal.icon} size={40}/></span><span className="eyebrow">{connected ? 'PURCHASE DETAILS' : 'SAMPLE PURCHASE'}</span><h2>{modal.name}</h2><p>{modal.merchant} · Purchased {new Date(modal.date).toLocaleDateString('en-US', { dateStyle: 'medium', timeZone: 'UTC' })}</p><div className="detail-money"><span>Purchase amount<strong>{money(modal.price)}</strong></span><span>Potential return<strong className="green">{modal.saving ? money(modal.saving) : '—'}</strong></span></div><h3>Before you take the next step</h3><ul className="evidence-list"><li><Icon name="receipt" size={17}/> Verify the receipt and exact product model.</li><li><Icon name="bag" size={17}/> Check seller, stock, condition, and shipping.</li><li><Icon name="shield" size={17}/> Confirm policy eligibility and deadlines.</li></ul>{connected ? <p className="sample-note">This purchase is tracked. Recovery requires verified evidence and an eligible opportunity.</p> : <><button className="primary wide" disabled={demoReviewed.includes(modal.id)} onClick={() => { setDemoReviewed(v => [...v, modal.id]); notify('Sample marked as reviewed. No real claim was submitted.'); }}>{demoReviewed.includes(modal.id) ? 'Sample reviewed' : 'Mark sample as reviewed'}<Icon name="check" size={17}/></button><p className="form-help">Demo only. This does not approve or submit a real claim.</p></>}</>}

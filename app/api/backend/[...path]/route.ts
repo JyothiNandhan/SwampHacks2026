@@ -1,5 +1,5 @@
-import { cookies } from 'next/headers';
-import { backendOrigin, failure, sameOrigin, sessionCookie } from '../../../../lib/backend';
+import { backendOrigin, failure, sameOrigin } from '../../../../lib/backend';
+import { accountSession } from '../../../../lib/account-session';
 import { uploadErrorMessage } from '../../../../lib/receipt-upload';
 const reads = /^(purchases|opportunities|notifications|deadlines|subscriptions|purchases\/[a-f0-9-]{36}\/timeline|offers\/[a-f0-9-]{36}|documents\/[a-f0-9-]{36})$/;
 const writes = /^(documents|receipts\/ingest)$/;
@@ -13,7 +13,8 @@ async function proxy(request: Request, { params }: {
         return failure('This action is unavailable.', 404);
     if (request.method !== 'GET' && !sameOrigin(request))
         return failure('Request origin was not accepted.', 403);
-    const token = (await cookies()).get(sessionCookie)?.value;
+    let token:string|undefined;
+    try { token=(await accountSession()).token; } catch { return failure('Your session expired. Sign in again.',401); }
     if (!token)
         return failure('Connect your account to continue.', 401);
     try {
