@@ -16,7 +16,7 @@ remaining Gate 3 and later integration work.
 | **Rishithaaa** | `apps/api/src/modules/recovery/`, `deadlines/`, `timeline/`, `notifications/` | Recovery Action Center API, missing refund checks, approvals/state machine, purchase timeline, textbook/gift-card/rental reminders |
 | **Nandhan** | `apps/api/src/modules/retail/`, `opportunities/`, `apps/worker/` | Best Buy API, Bright Data dataset scrapers, exact SKU matching, price observations, price drops and scheduled monitors |
 
-**Frontend:** the initial Next.js dashboard is now implemented in `apps/web/` on `frontend/moneyback-dashboard`. Run `pnpm --filter @moneyback/web dev` to explore the labeled demo or connect a per-user API token. Live purchases, opportunities and receipt extraction are connected; Auth0, case/notification history and the full Nessie bank-to-refund gate remain pending.
+**Frontend:** the Next.js dashboard is implemented in `apps/web/` on `main`; the generated `godaddy-web` branch provides standalone GoDaddy deployment source. Run `pnpm --filter @moneyback/web dev` to explore the labeled demo or connect a per-user API token. Auth0 sign-in and read-only Gmail receipt importing are implemented and require provider configuration and live consent verification; see [activation instructions](docs/frontend/AUTH0_GMAIL.md). Case/notification history and the complete live retail-to-refund release gate remain pending.
 
 ## Ground rules
 - One shared repository and one root `pnpm-lock.yaml`. Do **not** commit `package-lock.json`, `yarn.lock`, or a second lockfile.
@@ -106,7 +106,7 @@ Final method/paths and payloads are locked in T02 contracts, and changes require
 
 ## Deployment and testing
 - `apps/api` → Railway API; `apps/worker` → Railway cron/scheduled worker; Tiger Data → PostgreSQL; private object storage for documents.
-- Vercel web **only after T24**. Auth0 frontend sign-in postponed; backend must still validate access tokens / restrict demo endpoints; no unauthenticated financial routes.
+- Frontend → GoDaddy via generated `godaddy-web`; domain registration remains at Porkbun. Auth0/Gmail activation requires configured OAuth applications. The backend validates access tokens and restricts demo endpoints; no financial routes are public.
 - Validate in Postman/Bruno or API documentation; GitHub Actions must pass. Keep a recorded/frozen demo price response **labeled replay** if providers rate-limit or fail.
 - Prioritize a reliable live vertical slice over unfinished extra integrations: Nessie purchase → scanned/email receipt → match → Best Buy/Bright Data offer → policy decision → case → simulated deposit match.
 

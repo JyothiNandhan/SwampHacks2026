@@ -10,9 +10,10 @@
   SameSite=Strict cookie flags, authenticated purchase read, disconnect and cross-origin rejection.
 - Screenshots show labeled synthetic data only: dashboard-desktop.png and dashboard-mobile.png.
 
-This is an initial frontend, not a complete frontend release. Auth0 sign-in, live case
-and notification history, pagination controls and final public deployment remain
-unfinished. Nessie sandbox purchase import and independent simulated-refund reconciliation
+This is an initial frontend, not a complete frontend release. Auth0 sign-in and
+user-triggered Gmail import are implemented, with provider configuration and live
+consent verification still pending; see AUTH0_GMAIL.md. Live case/notification history,
+pagination controls and final public deployment remain unfinished. Nessie sandbox purchase import and independent simulated-refund reconciliation
 have since passed; the complete live retail-to-refund positive path remains open. No sample approval or recovery creates a real financial claim.
 
 ## Railway deployment preparation
