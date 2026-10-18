@@ -2,14 +2,14 @@
 
 ## Current checks
 
-- `pnpm check`: version pins, contracts, workspace types, **178 tests** and backend builds passed. One optional PostgreSQL-driver test was skipped by this run.
+- `pnpm check`: version pins, contracts, workspace types, **179 tests** and backend builds passed. One optional PostgreSQL-driver test was skipped by this run.
 - Separate PostgreSQL 14.21 run: migrations 001/002, migration replay, database recovery and six backend integration tests passed (**7 tests**). CI uses PostgreSQL 16.10.
 - Synthetic regression evaluation: 15/15 expectations passed. No real-world OCR accuracy is claimed.
 - Docker is unavailable locally; no local image test is claimed.
 
 ## Deployed checks
 
-The public API returned HTTP 200 at commit `0c714a7a9aa5c2bab74cb03f2375d32cb3806735`.
+The public API returned HTTP 200 at commit `5798b7356673e7aa8c8fe96cfd1f9dd5a229e906`.
 
 - Authenticated reads, verified Tiger Data TLS and migration checksums passed.
 - Real Railway worker consumed an itemless synthetic connectivity probe. This does not establish retailer execution.
@@ -53,3 +53,28 @@ Nessie's official DepositCreate schema defines amount as an integer. The current
 refund. A whole-dollar deposit cannot fully confirm that amount. The application
 must retain the exact expected amount and leave any unmatched remainder pending.
 No deposit or completed live refund is claimed by this check.
+
+## Current deployment and seller guard
+
+The API is now serving 5798b73. A fresh deployed job for a separate clearly synthetic
+USD 40 purchase and matched receipt (item USD 38.91, tax USD 1.09) succeeded on its
+first attempt, saved five observations and created zero eligible offers/opportunities.
+See live-priced-worker-followup.json. The earlier USD 21.92 + 6.99 quote is historical;
+a refreshed exact-product quote now names a marketplace seller at USD 28.99 with free
+shipping. Other current search results name unsupported retailers or different models.
+Neither an old price nor a different seller establishes a current eligible offer.
+
+A follow-up guard now permits cross-provider shipping enrichment only for explicitly
+verified first-party Walmart offers. SerpApi must name Walmart with selectedSellerId=0;
+Bright Data must actually report seller Walmart.com/Walmart. A requested URL selector
+alone does not establish the scraped seller. Marketplace, unknown-seller and Amazon
+shipping joins remain unsupported; a provider's own complete offer can still be used.
+Price, model, condition, stock and freshness gates remain in force. Tests verify a
+same-product/same-price seller mismatch is rejected before persistence or replay
+short-circuiting. Deploy this guard on the API service.
+
+The live priced recovery and simulated-refund gate remains open pending a current
+compatible offer. No sandbox deposit was created and no completed live refund is
+claimed. The prepared USD 40 fixture would produce a USD 10 expectation only if a
+current verified delivered price is USD 28.91; expected refund amounts are never
+rounded or rewritten to make the sandbox confirm.

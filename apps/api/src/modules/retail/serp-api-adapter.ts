@@ -41,6 +41,7 @@ export class SerpApiAdapter {
       const shipping=typeof row.shipping==='string'&&/^free$/i.test(row.shipping)?0:usdCents(typeof row.shipping==='string'?row.shipping.replace(/^\+\s*/, ''):null,row.shipping_extracted);
       if(price===null||shipping===null||typeof row.name!=='string'||!Array.isArray(row.details_and_offers)||!row.details_and_offers.some(s=>typeof s==='string'&&/^in stock(?: online)?$/i.test(s)))continue;
       try{const url=new URL(String(row.link));if(url.protocol!=='https:'||url.username||url.password||!['walmart.com','www.walmart.com','amazon.com','www.amazon.com'].includes(url.hostname))continue;
+        if(url.hostname.replace(/^www\./,'')!=='walmart.com'||row.name!=='Walmart'||url.searchParams.get('selectedSellerId')!=='0')continue;
         quotes.push({source:'SERPAPI',retailerName:row.name,productUrl:url.toString(),priceCents:price,shippingCents:shipping,inStock:true,observedAt});
       }catch{continue;}
     }

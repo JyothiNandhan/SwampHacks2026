@@ -52,7 +52,7 @@ export function createOfferProvider(config: IntegrationConfig, pool: pg.Pool, fe
         }))].slice(0,3);
         if (!urls.length)continue;
         for(const offer of await bright.collectOffers(retailer,urls)){
-          const quote=quotes.find(q=>productIdentity(q.productUrl)===productIdentity(offer.productUrl)&&q.priceCents===offer.priceCents);
+          const quote=quotes.find(q=>shippingIdentityMatches(q,offer)&&q.priceCents===offer.priceCents);
           // Only exact URL + identical USD price joins facts from these two providers.
           // Model, condition and availability still come from the product-level snapshot.
           if(quote&&offer.shippingCents===null&&offer.model&&offer.condition==='NEW'&&offer.inStock===true){
@@ -80,6 +80,7 @@ export function createPriceExecutor(pool: pg.Pool, config: IntegrationConfig, pr
       for (const rawOffer of offers) {
         const {shippingEvidence,...offerFields}=rawOffer;
         const offer = ProductOfferSchema.parse(offerFields);
+        if(shippingEvidence&&(!shippingIdentityMatches(shippingEvidence,offer)||shippingEvidence.priceCents!==offer.priceCents||shippingEvidence.shippingCents!==offer.shippingCents))throw new ApiError('RETAIL_EVIDENCE_MISMATCH',409);
         await transaction(pool, async client => {
           await owned(client,'purchases',userId,purchase.id,true);
           const saved = await client.query(`INSERT INTO product_offers(user_id,purchase_id,source,retailer_name,product_name,sku,model,gtin,condition,price_cents,shipping_cents,currency,in_stock,product_url,observed_at)
@@ -94,7 +95,6 @@ export function createPriceExecutor(pool: pg.Pool, config: IntegrationConfig, pr
           const evidence = (await client.query(`INSERT INTO evidence(user_id,source_type,source_id,category,acquisition_method,raw_url) VALUES($1,'OFFER',$2,$3,$4,$5) RETURNING id`, [userId,saved.rows[0].id,'PRICE_OBSERVATION',offer.source === 'FIXTURE' ? 'LABELED_REPLAY' : 'PROVIDER_API',offer.productUrl])).rows[0].id;
           const evidenceIds=[evidence];
           if(shippingEvidence){
-            if(productIdentity(shippingEvidence.productUrl)!==productIdentity(offer.productUrl)||shippingEvidence.priceCents!==offer.priceCents||shippingEvidence.shippingCents!==offer.shippingCents)throw new ApiError('RETAIL_EVIDENCE_MISMATCH',409);
             const shippingId=(await client.query(`INSERT INTO evidence(user_id,source_type,source_id,category,acquisition_method,raw_url,checksum) VALUES($1,'OFFER',$2,'SHIPPING_QUOTE','SERPAPI_GOOGLE_PRODUCT',$3,$4) RETURNING id`,[userId,`${saved.rows[0].id}:shipping`,shippingEvidence.productUrl,createHash('sha256').update(JSON.stringify(shippingEvidence)).digest('hex')])).rows[0].id;
             evidenceIds.push(shippingId);
             await client.query(`INSERT INTO events(user_id,idempotency_key,entity_type,entity_id,event_type,event_payload) VALUES($1,$2,'PURCHASE',$3,'RETAIL_OFFER_VERIFIED',$4)`,[userId,`retail-verification:${saved.rows[0].id}`,purchase.id,JSON.stringify({offerId:saved.rows[0].id,productSource:offer.source,shippingEvidenceId:shippingId,shippingQuote:shippingEvidence})]);
@@ -124,4 +124,12 @@ function productIdentity(value:string):string {
  if(host==='walmart.com'){const id=/\/(\d+)\/?$/.exec(url.pathname)?.[1];if(id)return `walmart:${id}`;}
  if(host==='amazon.com'){const asin=/\/(?:dp|gp\/product)\/([A-Z0-9]{10})(?:\/|$)/i.exec(url.pathname)?.[1];if(asin)return `amazon:${asin.toUpperCase()}`;}
  return host+url.pathname.replace(/\/$/,'');
+}
+
+function shippingIdentityMatches(quote: StoreQuote, offer: ProductOffer): boolean {
+  const left=new URL(quote.productUrl),right=new URL(offer.productUrl);
+  return quote.retailerName==='Walmart'&&offer.source==='BRIGHT_DATA'&&
+    left.hostname.replace(/^www\./,'')==='walmart.com'&&right.hostname.replace(/^www\./,'')==='walmart.com'&&
+    left.searchParams.get('selectedSellerId')==='0'&&right.searchParams.get('selectedSellerId')==='0'&&
+    productIdentity(quote.productUrl)===productIdentity(offer.productUrl);
 }

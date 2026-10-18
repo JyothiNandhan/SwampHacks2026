@@ -1,0 +1,12 @@
+{
+  "mode": "LIVE_SANDBOX",
+  "synthetic": true,
+  "realMoneyMoved": false,
+  "commit": "5798b7356673e7aa8c8fe96cfd1f9dd5a229e906",
+  "jobStatus": "SUCCEEDED",
+  "attempts": 1,
+  "observations": 5,
+  "eligibleOffers": 0,
+  "opportunities": 0,
+  "pricedWorkerVerified": false
+}

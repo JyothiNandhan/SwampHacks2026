@@ -114,3 +114,12 @@ test('reads live Walmart model/availability fields without inventing shipping an
   expect((await adapter.downloadOffers('sd_live2','walmart'))[0].inStock).toBe(false);
   await expect(adapter.downloadOffers('sd_live3','walmart')).rejects.toMatchObject({code:'BRIGHT_DATA_INVALID_RESPONSE'});
 });
+
+
+test('shipping seller identity comes from the actual snapshot, never the requested URL selector',async()=>{
+ const record={title:'Casio Watch',url:'https://www.walmart.com/ip/192953947?selectedSellerId=0',final_price:21.92,currency:'USD',condition:'New',model:'F91W-1',availability:'In stock'};
+ const fetchImpl=vi.fn<typeof fetch>().mockResolvedValueOnce(Response.json([{...record,seller:'Marketplace Store'}])).mockResolvedValueOnce(Response.json([{...record,seller:'Walmart.com'}]));
+ const adapter=new BrightDataAdapter({apiKey:'fixture',datasetIds,fetchImpl});
+ expect(new URL((await adapter.downloadOffers('s_seller1','walmart'))[0].productUrl).searchParams.get('selectedSellerId')).toBeNull();
+ expect(new URL((await adapter.downloadOffers('s_seller2','walmart'))[0].productUrl).searchParams.get('selectedSellerId')).toBe('0');
+});

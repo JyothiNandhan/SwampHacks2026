@@ -171,7 +171,14 @@ export class BrightDataAdapter {
     const productName = firstString(record, ['title', 'product_name', 'name']);
     const rawUrl = firstString(record, ['url', 'product_url', 'link']);
     if (!productName || !rawUrl) throw new BrightDataApiError('BRIGHT_DATA_INVALID_RESPONSE');
-    const productUrl = validateProductUrl(rawUrl, retailer);
+    let productUrl = validateProductUrl(rawUrl, retailer);
+    if (retailer === 'walmart') {
+      const url = new URL(productUrl);
+      // Input URL selectors do not prove who actually sells the scraped offer.
+      url.searchParams.delete('selectedSellerId');
+      if (/^walmart(?:\.com)?$/i.test(String(record.seller ?? '').trim())) url.searchParams.set('selectedSellerId', '0');
+      productUrl = url.toString();
+    }
     const currency = firstString(record, ['currency', 'currency_code']);
     if (currency && !['USD', '$', 'US$'].includes(currency.toUpperCase())) {
       throw new BrightDataApiError('BRIGHT_DATA_INVALID_RESPONSE');

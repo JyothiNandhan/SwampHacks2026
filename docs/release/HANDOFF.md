@@ -3,8 +3,9 @@
 The API and worker are deployed to Railway; Tiger Data TLS, migrations, authenticated
 routes, live receipt extraction and storage across redeployment have been verified.
 Clean Nessie sandbox purchase creation/import now pass. The full live release gate
-remains open until the new retail integration is deployed and the complete live
-priced-worker-to-simulated-refund flow is verified. Gemini 3.5 Flash passed 3/3 live
+remains open until a current compatible retail offer and the complete live
+priced-worker-to-simulated-refund flow are verified. The query fix is deployed; a
+follow-up seller-identity guard still requires API deployment. Gemini 3.5 Flash passed 3/3 live
 synthetic email checks; direct exact-product and shipping evidence now pass.
 Frontend work is paused while these backend release checks are completed.
 
@@ -275,3 +276,15 @@ verified offer; deploy this follow-up before rerunning the worker. See VERIFICAT
 and the two explicitly labeled orchestrator/worker reports. The current Casio
 scenario expects USD 4.09, while Nessie documents integer deposit amounts; partial
 sandbox inflows must not be mislabeled as a fully confirmed refund.
+
+### Current seller boundary
+
+The 5798b73 deployed worker job succeeded with five observations and zero eligible
+offers. Previously verified prices changed; a marketplace seller's shipping is not
+shipping evidence for Walmart's own offer. Cross-provider shipping enrichment now
+requires explicit first-party Walmart identity from both sources, in addition to
+the same product and price. Bright Data derives this identity from the actual seller
+field, never the input URL. Unsupported/unknown sellers retain unknown shipping.
+Current results and the separate USD 40 synthetic fixture are in VERIFICATION.md.
+No deposit or live refund confirmation is claimed. Deploy the seller guard on API;
+the worker code is unchanged.

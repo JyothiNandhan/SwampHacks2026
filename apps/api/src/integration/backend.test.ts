@@ -198,12 +198,13 @@ test('verified shipping joins retain both provider evidence records and reject p
  const s=await fixture();try{
   const purchaseId=(await s.pool.query("INSERT INTO purchases(user_id,merchant_name,purchased_at,amount_cents) VALUES($1,'Synthetic test',NOW(),3000) RETURNING id",[userId])).rows[0].id;
   await s.pool.query("INSERT INTO purchase_items(user_id,purchase_id,name,brand,model,quantity,unit_price_cents) VALUES($1,$2,'Casio Watch','Casio','F91W-1',1,3000)",[userId,purchaseId]);
-  const now=new Date().toISOString();const offer={id:'verified',source:'BRIGHT_DATA' as const,retailerName:'Walmart',productName:'Casio F91W-1',sku:'192953947',model:'F-91W-1',gtin:null,condition:'NEW' as const,priceCents:2192,shippingCents:699,currency:'USD' as const,inStock:true,productUrl:'https://www.walmart.com/ip/192953947',observedAt:now,shippingEvidence:{source:'SERPAPI' as const,retailerName:'Walmart',productUrl:'https://www.walmart.com/ip/Casio/192953947',priceCents:2192,shippingCents:699,inStock:true as const,observedAt:now}};
+  const now=new Date().toISOString();const offer={id:'verified',source:'BRIGHT_DATA' as const,retailerName:'Walmart',productName:'Casio F91W-1',sku:'192953947',model:'F-91W-1',gtin:null,condition:'NEW' as const,priceCents:2192,shippingCents:699,currency:'USD' as const,inStock:true,productUrl:'https://www.walmart.com/ip/192953947?selectedSellerId=0',observedAt:now,shippingEvidence:{source:'SERPAPI' as const,retailerName:'Walmart',productUrl:'https://www.walmart.com/ip/Casio/192953947?selectedSellerId=0',priceCents:2192,shippingCents:699,inStock:true as const,observedAt:now}};
   const config=loadIntegrationConfig({PRICE_MONITOR_MODE:'LIVE'});
   expect(await createPriceExecutor(s.pool,config,async()=>[offer])(userId,[purchaseId])).toMatchObject({observations:1,opportunities:1});
   const opportunity=(await s.pool.query('SELECT id,estimated_savings_cents FROM opportunities WHERE purchase_id=$1',[purchaseId])).rows[0];expect(opportunity.estimated_savings_cents).toBe(109);
   expect((await s.pool.query('SELECT count(*)::int AS count FROM opportunity_evidence WHERE opportunity_id=$1',[opportunity.id])).rows[0].count).toBe(2);
   expect((await s.pool.query("SELECT count(*)::int AS count FROM events WHERE entity_id=$1 AND event_type='RETAIL_OFFER_VERIFIED'",[purchaseId])).rows[0].count).toBe(1);
+  await expect(createPriceExecutor(s.pool,config,async()=>[{...offer,shippingEvidence:{...offer.shippingEvidence,productUrl:offer.shippingEvidence.productUrl.replace('selectedSellerId=0','selectedSellerId=123')}}])(userId,[purchaseId])).rejects.toMatchObject({code:'RETAIL_EVIDENCE_MISMATCH'});
   await expect(createPriceExecutor(s.pool,config,async()=>[{...offer,observedAt:new Date(Date.now()+1).toISOString(),shippingEvidence:{...offer.shippingEvidence,priceCents:1}}])(userId,[purchaseId])).rejects.toMatchObject({code:'RETAIL_EVIDENCE_MISMATCH'});
  }finally{await s.close();}
 },60000);
@@ -216,13 +217,13 @@ test('retail discovery retries a punctuation alias without treating the search t
   const fetchImpl=vi.fn<typeof fetch>().mockImplementation(async(input)=>{
    const url=new URL(String(input));
    if(url.hostname==='serpapi.com'){
-    if(url.searchParams.get('engine')==='google_product')return Response.json({product_results:{stores:[{name:'Walmart',link:'https://www.walmart.com/ip/192953947',price:'$21.92',extracted_price:21.92,shipping:'+$6.99',shipping_extracted:6.99,details_and_offers:['In stock online']}]}});
+    if(url.searchParams.get('engine')==='google_product')return Response.json({product_results:{stores:[{name:'Walmart',link:'https://www.walmart.com/ip/192953947?selectedSellerId=0',price:'$21.92',extracted_price:21.92,shipping:'+$6.99',shipping_extracted:6.99,details_and_offers:['In stock online']}]}});
     const query=url.searchParams.get('q')??'';queries.push(query);
     return Response.json({shopping_results:query==='Casio F-91W-1 watch new'?[{title:'Unverified search title',immersive_product_page_token:'token'}]:[]});
    }
    if(url.pathname.includes('/trigger'))return Response.json({snapshot_id:'s_alias'});
    if(url.pathname.includes('/progress'))return Response.json({snapshot_id:'s_alias',status:'ready'});
-   return Response.json([{url:'https://www.walmart.com/ip/192953947',title:'Casio Watch',model:'F91W-1',condition:'New',final_price:21.92,currency:'USD',is_available:true,timestamp:new Date().toISOString()}]);
+   return Response.json([{url:'https://www.walmart.com/ip/192953947?selectedSellerId=0',title:'Casio Watch',seller:'Walmart.com',model:'F91W-1',condition:'New',final_price:21.92,currency:'USD',is_available:true,timestamp:new Date().toISOString()}]);
   });
   const purchase={id:purchaseId,transactionId:null,receiptIds:[],merchantName:'Synthetic',orderNumber:null,purchasedAt:new Date().toISOString(),amountCents:3300,currency:'USD' as const,matchStatus:'MATCHED' as const,items:[{name:'Casio Classic Watch',brand:'Casio',model:'F91W-1',sku:null,gtin:null,quantity:1,unitPriceCents:3300}]};
   const offers=await createOfferProvider(loadIntegrationConfig({SERPAPI_API_KEY:'fixture',BRIGHTDATA_API_KEY:'fixture',BRIGHTDATA_WALMART_DATASET_ID:'gd_test'}),s.pool,fetchImpl)(purchase);
