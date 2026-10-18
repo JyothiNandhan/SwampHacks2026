@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { backendOrigin, failure, sameOrigin, sessionCookie } from '../../../../lib/backend';
+import { uploadErrorMessage } from '../../../../lib/receipt-upload';
 const reads = /^(purchases|opportunities|notifications|deadlines|subscriptions|purchases\/[a-f0-9-]{36}\/timeline|offers\/[a-f0-9-]{36}|documents\/[a-f0-9-]{36})$/;
 const writes = /^(documents|receipts\/ingest)$/;
 async function proxy(request: Request, { params }: {
@@ -32,7 +33,7 @@ async function proxy(request: Request, { params }: {
         const upstream = await fetch(url, { method: request.method, headers: { authorization: `Bearer ${token}`, ...(body ? { 'content-type': 'application/json' } : {}) }, body, cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(60000) });
         const data = await upstream.json().catch(() => null);
         if (!upstream.ok)
-            return failure(upstream.status === 401 ? 'Your session expired. Reconnect your account.' : upstream.status === 503 ? 'This service is temporarily unavailable. Please try again.' : 'The action could not be completed. Please review your information.', upstream.status);
+            return failure(uploadErrorMessage(upstream.status, typeof data?.error?.code === 'string' ? data.error.code : undefined), upstream.status);
         return Response.json(data, { headers: { 'cache-control': 'no-store' } });
     }
     catch {
