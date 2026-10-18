@@ -7,7 +7,8 @@
 - Worker connectivity (synthetic itemless probe; no retailer or savings claim).
 - Private receipt upload, live Gemini extraction and unchanged file checksum after redeployment.
 - Gemini 3.5 Flash passed 3/3 live synthetic email checks; the imported bank transaction matched its receipt.
-- Direct Bright Data product and SerpApi shipping evidence agree on a Walmart product and price. The updated deployed priced worker remains unverified.
+- API code 0fe1f8b and its CI are verified; a fresh worker batch completed with ten observations and zero price opportunities.
+- Live Nessie USD 10 simulated deposit reconciled to CONFIRMED using an explicitly operator-provisioned synthetic billing case; replay preserved one allocation.
 - Offline receipt-to-simulated-refund integration passes against actual PostgreSQL.
 
 ## 1. Safe deployed walkthrough
@@ -63,3 +64,18 @@ condition, shipping and stock. A search result alone cannot establish eligibilit
 Keep T22/T24 open until the live bank-to-simulated-refund flow passes. Keep T25's final
 presentation sign-off open until the team runs the demo and saves redacted deployment
 logs. CI, local tests and a successful health endpoint do not replace those checks.
+
+## 4. Recorded live reconciliation demonstration
+
+The redacted live-billing-refund-setup.json and live-billing-refund-checks.json record
+an independent reconciliation pass: synthetic uploaded agreement USD 30/final bill
+USD 40 → live comparison USD 10 → trusted operator provisioned an OVERBILLING test
+opportunity with cited evidence/audit → deployed case creation and explicit test
+approval → operator simulated submission → completed Nessie USD 10 deposit read-back
+and import → CONFIRMED → repeat reconciliation with no duplicate allocation.
+
+Label this **live Nessie reconciliation with an operator-provisioned synthetic billing
+fixture**. The billing route does not automatically create an opportunity. This is
+separate from the full retail demonstration in section 3, whose live positive path
+remains open pending a current eligible offer. Do not present it as a merchant refund
+or an automated retail savings result. All amounts are sandbox data; no real money moved.

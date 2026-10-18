@@ -1,0 +1,16 @@
+{
+  "mode": "LIVE_SANDBOX",
+  "synthetic": true,
+  "realMoneyMoved": false,
+  "verificationScope": "LIVE_NESSIE_RECONCILIATION_WITH_OPERATOR_FIXTURE",
+  "retailEndToEndVerified": false,
+  "approval": "EXPLICIT_SYNTHETIC_TEST_APPROVAL",
+  "depositReadBack": "COMPLETED_USD_10_00",
+  "caseStatus": "CONFIRMED",
+  "expectedRefundCents": 1000,
+  "confirmedRefundCents": 1000,
+  "simulated": true,
+  "replay": "PASS_NO_DOUBLE_ALLOCATION",
+  "confirmationAudit": "PASS",
+  "bankRefundReconciliation": "PASS"
+}

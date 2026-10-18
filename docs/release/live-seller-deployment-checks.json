@@ -1,0 +1,18 @@
+{
+  "mode": "LIVE_SANDBOX",
+  "synthetic": true,
+  "realMoneyMoved": false,
+  "commit": "0fe1f8b52341a2ab78fca0b55dc6ae2c66c57567",
+  "jobStatus": "SUCCEEDED",
+  "attempts": 1,
+  "jobObservations": 10,
+  "jobOpportunities": 0,
+  "jobSkippedPurchases": 0,
+  "observationsScope": "PERSISTED_TARGET_PURCHASE_TOTAL",
+  "freshSellerGuardJob": true,
+  "syntheticPurchasesInBatch": 2,
+  "observations": 10,
+  "eligibleOffers": 0,
+  "opportunities": 0,
+  "pricedWorkerVerified": false
+}

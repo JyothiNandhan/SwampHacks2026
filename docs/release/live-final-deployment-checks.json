@@ -1,0 +1,15 @@
+{
+  "codeCommit": "0fe1f8b52341a2ab78fca0b55dc6ae2c66c57567",
+  "health": "PASS",
+  "verifiedDatabaseTls": "PASS",
+  "migrationChecksums": "PASS",
+  "authenticatedPurchases": "PASS",
+  "documentWriteAndRead": "PASS",
+  "documentPersistence": "PASS_ACROSS_INSTANCE_CHANGE",
+  "existingReceiptReadBack": {
+    "status": "EXTRACTED",
+    "totalMatches": true,
+    "freshProviderRequest": false
+  },
+  "codeCommitCi": "SUCCESS"
+}

@@ -1,20 +1,18 @@
 # T20–T25 backend handoff
 
-The API and worker are deployed to Railway; Tiger Data TLS, migrations, authenticated
-routes, live receipt extraction and storage across redeployment have been verified.
-Clean Nessie sandbox purchase creation/import now pass. The full live release gate
-remains open until a current compatible retail offer and the complete live
-priced-worker-to-simulated-refund flow are verified. The query fix is deployed; a
-follow-up seller-identity guard still requires API deployment. Gemini 3.5 Flash passed 3/3 live
-synthetic email checks; direct exact-product and shipping evidence now pass.
-Frontend work is paused while these backend release checks are completed.
+The API and worker are deployed to Railway. Code commit 0fe1f8b is active and its
+CI passed. Verified TLS, migrations, authenticated routes, receipt extraction/matching
+and document persistence passed. Live Nessie USD 10 simulated-refund reconciliation
+also passed using an explicitly audited, operator-provisioned synthetic billing case.
+The complete live retail-to-refund gate remains open because current product/seller/
+shipping evidence has not established an eligible offer. Frontend work remains paused.
 
 | Task | Delivered and verified | Remaining release evidence |
 |---|---|---|
-| T20 | Contract routes, auth/authz, env validation, OpenAPI, Railway API, private volume and verified database TLS | Check the latest deployment after backend changes |
+| T20 | Contract routes, auth/authz, env validation, OpenAPI, Railway API, private volume and verified database TLS | Current code 0fe1f8b verified |
 | T21 | Real Railway worker connectivity; SerpApi live priced observations; Bright Data collection transport; conservative source persistence and replay tests | Verified exact-product live offers and a priced live worker job |
-| T22 | PostgreSQL smoke verifies approval, correlated completed simulated deposits, partial refunds and allocation guards | Complete live simulated refund flow (sandbox purchase import now passes) |
-| T23 | 15/15 synthetic regression cases; live Gemini synthetic email extraction | A consented real photographed/email receipt corpus for real-world accuracy |
+| T22 | Live Nessie USD 10 deposit imported and reconciled to CONFIRMED with an operator-provisioned synthetic billing case; replay kept one allocation; offline partial/refund guards pass | Retail-generated live case path is still part of T24 |
+| T23 | 15/15 synthetic regression cases and 3/3 direct live Gemini synthetic email checks | Real photographed-receipt accuracy remains unmeasured |
 | T24 | Green remote CI; current real-driver PostgreSQL migration and smoke checks; stable Railway API/worker | Complete live bank-to-simulated-refund flow |
 | T25 | Postman collection, OpenAPI, backend demo commands and updated release handoff | Final backend demo and redacted Railway log screenshots |
 
@@ -226,65 +224,32 @@ account was preserved, and the demo now binds a separate clean customer/account.
 See NESSIE_BLOCKER.md and live-nessie-checks.json. API origin:
 `https://prod-api.nessieisreal.com`.
 
-### Provider verification — 2026-10-17
+### Current provider and recovery results
 
-Current results are in VERIFICATION.md and the redacted live JSON reports. Use
-`GEMINI_MODEL=gemini-3.5-flash`: three live synthetic email cases passed, and the
-deployed bank receipt extracted and matched. The previous 3.8 Flash availability
-failure is superseded. Direct Walmart product and SerpApi shipping evidence pass;
-a deployed priced worker job and full simulated refund still require verification.
+See VERIFICATION.md and the redacted live JSON reports for current evidence. API code
+0fe1f8b is deployed and CI passed. Set GEMINI_MODEL=gemini-3.5-flash; the earlier 3.8
+availability failure is superseded by later successful synthetic checks.
 
-### SerpApi replaces the active Best Buy integration (contract 1.2.0)
+SerpApi replaces the active Best Buy integration. The API needs SERPAPI_API_KEY;
+the worker delegates provider work to the API. Migration 002 adds SERPAPI without
+rewriting historical Best Buy observations. Walmart product collection uses
+BRIGHTDATA_WALMART_DATASET_ID=gd_l95fol7l1ru6rlo116 and BRIGHTDATA_API_KEY.
 
-Set `SERPAPI_API_KEY` on the **API** service. The worker delegates provider execution
-to the API and does not need this key. The live search provider now uses SerpApi
-Google Shopping (US, English); `BESTBUY_API_KEY` is no longer read by the integration.
-Historical Best Buy observations and the standalone legacy adapter remain readable.
-Migration `002_serpapi_source` adds the `SERPAPI` source to offer/history constraints
-without rewriting existing data or changing migration 001. Apply `pnpm db:migrate`
-with the trusted database TLS configuration before enabling SerpApi on Railway.
+Cross-provider shipping enrichment currently supports explicitly verified first-party
+Walmart offers only. Product, seller and price must agree, and both evidence records
+are retained. Unknown sellers, conditional free shipping, conflicting models, stale
+quotes or unknown stock do not establish savings. The latest worker batch completed
+with ten observations and zero price opportunities.
 
-The live SerpApi check returned five validated priced USD listings. This establishes
-provider connectivity and normalization, not exact product matching or savings.
-Search listings retain null model/GTIN/SKU, stock and shipping and UNKNOWN condition;
-they cannot satisfy the automatic opportunity gate. The frontend can display these
-as price observations requiring further product and seller verification.
+The separate billing fixture used live API comparison of synthetic USD 30/40 documents.
+A trusted operator provisioned its OVERBILLING opportunity with cited evidence and an
+audit event; the comparison route itself does not create opportunities. Deployed case
+creation/approval, staff simulated submission, real Nessie sandbox USD 10 deposit
+read-back/import and reconciliation passed. The case reached CONFIRMED, replay did
+not allocate twice, and the simulated-confirmation audit exists. No real money moved.
+This independently verifies T22 reconciliation; it does not establish T24's complete
+live retail path. See live-billing-refund-setup.json and live-billing-refund-checks.json.
 
-Do not put the provider key in frontend environment variables, screenshots or Git.
-
-The deployed API/worker connectivity probe passed. Private receipt upload, extraction
-and checksum retention across an instance change also passed. Run
-`scripts/verify-live.mjs --documents --require-persistence` for the persistence gate.
-A reused completed connectivity job is not a fresh retailer execution.
-
-The new retail integration retains separate product and shipping provenance. Only
-exact retailer-product and price agreement can fill missing shipping; conditional
-free shipping remains unknown. The worker allows 180 seconds for asynchronous
-collection. Keep batches small and deploy both services after integration changes.
-
-Nessie sandbox purchase creation uses `purchase_date` and explicit completed status.
-Its response field may be `transaction_date`; contradictory dates fail import.
-Read back amounts before matching: this sandbox rounded a fractional purchase down
-to whole dollars. Do not round expected refunds or fabricate deposit evidence.
-
-### Retail query follow-up
-
-A fresh deployed job at 79db2b0 succeeded but only saved five incomplete search
-observations. The tested follow-up adds a bounded shorter/punctuation query and
-normalizes exact model punctuation. Its local live-provider run returned one fully
-verified offer; deploy this follow-up before rerunning the worker. See VERIFICATION.md
-and the two explicitly labeled orchestrator/worker reports. The current Casio
-scenario expects USD 4.09, while Nessie documents integer deposit amounts; partial
-sandbox inflows must not be mislabeled as a fully confirmed refund.
-
-### Current seller boundary
-
-The 5798b73 deployed worker job succeeded with five observations and zero eligible
-offers. Previously verified prices changed; a marketplace seller's shipping is not
-shipping evidence for Walmart's own offer. Cross-provider shipping enrichment now
-requires explicit first-party Walmart identity from both sources, in addition to
-the same product and price. Bright Data derives this identity from the actual seller
-field, never the input URL. Unsupported/unknown sellers retain unknown shipping.
-Current results and the separate USD 40 synthetic fixture are in VERIFICATION.md.
-No deposit or live refund confirmation is claimed. Deploy the seller guard on API;
-the worker code is unchanged.
+No additional Railway configuration is currently required. Remaining release work is
+a current eligible retail offer/full retail demonstration plus the team's final demo
+and redacted request-log screenshots. No current savings or merchant refund is claimed.

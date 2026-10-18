@@ -1,0 +1,9 @@
+{
+  "mode": "LIVE_SANDBOX",
+  "synthetic": true,
+  "realMoneyMoved": false,
+  "caseSetup": "OPERATOR_PROVISIONED_FROM_SYNTHETIC_BILLING_COMPARISON",
+  "retailEndToEndVerified": false,
+  "liveBillingComparison": "PASS_USD_10_00",
+  "operatorFixtureReady": true
+}

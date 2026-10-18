@@ -3,7 +3,7 @@
 **Four developers · Capital One Nessie hackathon · Backend first · Frontend later**
 
 ## What we are building
-An autonomous post-purchase recovery service. A Nessie purchase is reconciled to an email/photo receipt, mapped to an exact item, monitored against Best Buy and Bright Data offers, evaluated against return terms, turned into a user-approved recovery case, and optionally reconciled to a *simulated* incoming Nessie deposit. Additional capabilities include refunds, subscriptions, charges, warranties, paper-receipt deduplication, and textbook / gift-card / rental deadlines. No chatbot is required for the core workflow.
+An autonomous post-purchase recovery service. A Nessie purchase is reconciled to an email/photo receipt, mapped to an exact item, monitored with SerpApi and Bright Data product evidence, evaluated against return terms, turned into a user-approved recovery case, and optionally reconciled to a *simulated* incoming Nessie deposit. Additional capabilities include refunds, subscriptions, charges, warranties, paper-receipt deduplication, and textbook / gift-card / rental deadlines. No chatbot is required for the core workflow.
 
 ## Gate 3 and later ownership
 
@@ -191,9 +191,13 @@ deployment logs/screenshots remain required before passing the final T24/T25 gat
 Frontend development is paused. Backend local and real PostgreSQL checks pass;
 Railway receipt storage persists across API redeployments. See
 [the backend demo](docs/release/DEMO.md) and [measured verification](docs/release/VERIFICATION.md).
-Nessie sandbox purchase creation and deployed import now pass using a clean demo
-customer and explicit completed status. T22/T24 live sign-off remains open:
-Gemini 3.5 Flash passed 3/3 live synthetic email checks and the bank receipt matched.
-Direct exact-product and shipping evidence pass; the updated retail integration
-still needs deployment and a priced worker-to-simulated-refund run. The existing offline refund
-smoke uses labeled fixture providers and simulated reimbursements.
+Nessie sandbox purchase creation/import, synthetic receipt extraction/matching, and
+live USD 10 simulated-refund reconciliation now pass. The reconciliation test used
+an explicitly audited, operator-provisioned synthetic billing case; replay kept one
+allocation. No real money moved. API code 0fe1f8b and its CI are verified.
+
+The live retail worker completed with ten observations and zero eligible price
+opportunities. T24's complete live retail-to-refund demonstration remains open until
+a current same-product/same-seller offer with verified shipping is available. T25
+still needs the team's final demo and redacted Railway request logs. Gemini passed
+3/3 live synthetic email checks; real-world photo accuracy remains unmeasured.
