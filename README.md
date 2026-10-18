@@ -64,13 +64,13 @@ remaining Gate 3 and later integration work.
 ### Gate 3 — End-to-end APIs and release
 | ID | Owner | Exact task and acceptance | Wait for merge | Parallel? |
 |---|---|---|---|---|
-| **T20** | Rishav | Register module routes; secure auth middleware, authz and env validation; expose OpenAPI docs; deploy backend to Railway | T12 + T14 + T15 + T16 + T17 + T18 | Can prep deployment early; live wiring WAIT |
-| **T21** | To be assigned | Connect worker to live purchase/policy/case services; Best Buy & Bright Data integration tests, monitor replay | T19 + T20 | Wait for integration |
-| **T22** | Rishithaaa | Connect recovery cases to real Nessie deposits and confirm *simulated* reimbursements only when evidence matches | T15 + T20 | Wait for integration |
+| **T20** | Anish | Register module routes; secure auth middleware, authz and env validation; expose OpenAPI docs; deploy backend to Railway | T12 + T14 + T15 + T16 + T17 + T18 | Can prep deployment early; live wiring WAIT |
+| **T21** | Anish | Connect worker to live purchase/policy/case services; Best Buy & Bright Data integration tests, monitor replay | T19 + T20 | Wait for integration |
+| **T22** | Anish | Connect recovery cases to real Nessie deposits and confirm *simulated* reimbursements only when evidence matches | T15 + T20 | Wait for integration |
 | **T23** | Anish | Evaluate receipt/duplicate/policy matching, including ambiguous/incorrect papers; publish measured test outcomes | T09 + T13 + T17 | Yes |
-| **T24** | Rishav | CI smoke tests: Nessie → receipt → priced item → opportunity → approved case → simulated refund; deploy stable Railway API | T20 + T21 + T22 + T23 | Release gate |
-| **T25** | All | Backend-only Postman/Bruno/Swagger demo, README polish, API logs screenshots, handoff | T24 | Final backend milestone |
-| **F01** | To be assigned | Begin Vercel frontend using stable OpenAPI + fixtures (no backend rewrites) | T24 | After backend validated |
+| **T24** | Anish | CI smoke tests: Nessie → receipt → priced item → opportunity → approved case → simulated refund; deploy stable Railway API | T20 + T21 + T22 + T23 | Release gate |
+| **T25** | Anish | Backend-only Postman/Bruno/Swagger demo, README polish, API logs screenshots, handoff | T24 | Final backend milestone |
+| **F01** | Anish | Begin Vercel frontend using stable OpenAPI + fixtures (no backend rewrites) | T24 | After backend validated |
 
 **Possible parallel starts immediately after T02:** Rishav T03/T04, Anish T05, Nandhan T06, Rishithaaa T07. Don't block research, contract tests, and mock implementations while waiting for other API keys.
 
