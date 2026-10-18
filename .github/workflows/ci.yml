@@ -35,6 +35,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Contracts, types, database tests and builds
         run: pnpm check
+      - name: Frontend production build
+        run: pnpm --filter @moneyback/web build
       - name: Verify migrations and API pool with PostgreSQL driver
         env:
           TEST_DATABASE_URL: postgres://moneyback:ci-only-password@localhost:5432/moneyback_test

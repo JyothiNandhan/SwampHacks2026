@@ -10,6 +10,7 @@
     "@auth0/nextjs-auth0": "catalog:"
   },
   "devDependencies": {
+    "vitest": "catalog:",
     "typescript": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
@@ -18,6 +19,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   }
 }

@@ -29,8 +29,10 @@ banking mutations or case approvals. State-changing routes check the browser Ori
 
 Set server-only `API_BASE_URL` to an HTTPS API origin if overriding the default
 Railway deployment. No environment variable is required to explore demo mode.
-On Vercel, select the monorepo's `apps/web` root, framework Next.js, and keep the
-workspace pnpm lockfile. This work does not create a public hosting deployment.
+For Railway, use the dedicated root `Dockerfile.web` and keep the service root at
+`/` so the shared pnpm catalog/lockfile are available. See
+[the Railway deployment instructions](../../docs/frontend/RAILWAY.md). Hosting
+preparation and a successful local production build do not establish a public deployment.
 
 ## Receipt flow
 
@@ -43,7 +45,9 @@ invent a bank transaction or automatically create a recovery case.
 
 The purchase/opportunity views load the first API page. Case history, live notification
 history and Auth0 login are not connected yet. Sample actions never create a real
-claim. Nessie's purchase-listing error still blocks the full live bank-to-refund flow.
+claim. Live Nessie reconciliation passed using an operator-provisioned synthetic
+billing case. The full live retail-to-refund demonstration still needs a current
+eligible product/seller/price/shipping offer.
 
 Verification includes a production Next.js build, desktop/mobile browser interaction
 checks and live account proxy checks. See the root backend release verification for

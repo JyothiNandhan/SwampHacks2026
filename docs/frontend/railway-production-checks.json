@@ -1,0 +1,15 @@
+{
+  "runtime": "ISOLATED_NEXT_STANDALONE",
+  "hostingTarget": "RAILWAY",
+  "dashboard": "PASS",
+  "securityHeaders": "PASS",
+  "staticAssets": "PASS",
+  "health": "PASS",
+  "unauthenticatedProxy": "REJECTED_401",
+  "crossOriginMutation": "REJECTED_403",
+  "liveTokenValidation": "PASS",
+  "productionCookie": "HTTP_ONLY_SECURE_SAME_SITE_STRICT",
+  "livePurchaseProxy": "PASS",
+  "logout": "PASS",
+  "noTokenInHtml": "PASS"
+}

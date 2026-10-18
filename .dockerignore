@@ -1,9 +1,13 @@
 .git
 **/node_modules
 **/dist
+**/.next
 .env
 .env.*
 !.env.example
+**/.env
+**/.env.*
+!**/.env.example
 **/.railway
 **/coverage
 **/.DS_Store

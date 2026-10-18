@@ -200,6 +200,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.4(@types/debug@4.1.13)(@types/node@22.15.30)(lightningcss@1.33.0)(tsx@4.20.6)(yaml@2.9.1)
 
   apps/worker:
     dependencies:

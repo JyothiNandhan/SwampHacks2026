@@ -12,5 +12,14 @@
 
 This is an initial frontend, not a complete frontend release. Auth0 sign-in, live case
 and notification history, pagination controls and final public deployment remain
-unfinished. The backend's Nessie sandbox purchase-listing error remains external
-and unresolved. No sample approval or recovery creates a real financial claim.
+unfinished. Nessie sandbox purchase import and independent simulated-refund reconciliation
+have since passed; the complete live retail-to-refund positive path remains open. No sample approval or recovery creates a real financial claim.
+
+## Railway deployment preparation
+
+The dedicated Dockerfile.web and standalone output are prepared for a separate
+Railway service. Workspace checks passed 183 tests. A clean frontend-only frozen
+install/build and isolated standalone production smoke passed, including HTTPS
+proxy origin handling, live account validation/reads, secure cookies and logout.
+See RAILWAY.md and railway-production-checks.json. Docker is unavailable locally;
+the container build and public hosted URL await the Railway account connection.
