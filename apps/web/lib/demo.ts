@@ -17,4 +17,10 @@ export const demoPurchases: PurchaseView[] = [
     { id: 'demo-4', name: 'Everyday Backpack', merchant: 'Bellroy', category: 'Lifestyle', date: '2026-10-07', price: 17900, status: 'Recovered', saving: 3500, icon: 'bag' },
     { id: 'demo-5', name: 'Artisan Stand Mixer', merchant: 'KitchenAid', category: 'Home', date: '2026-10-04', price: 34900, status: 'Protected', saving: 0, icon: 'mixer' }
 ];
+const normalizeSearch = (value: string) => value.normalize('NFKC').trim().toLocaleLowerCase('en-US');
+export function purchaseMatchesQuery(purchase: PurchaseView, query: string) {
+    const needle = normalizeSearch(query);
+    if (!needle) return true;
+    return normalizeSearch(`${purchase.name} ${purchase.merchant} ${purchase.category}`).includes(needle);
+}
 export const money = (cents: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(cents / 100);

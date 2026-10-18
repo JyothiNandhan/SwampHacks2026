@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './icon';
 import { receiptUploadFormat } from '../lib/receipt-upload';
-import { demoPurchases, money, type PurchaseView } from '../lib/demo';
+import { demoPurchases, money, purchaseMatchesQuery, type PurchaseView } from '../lib/demo';
 type Section = 'Overview' | 'Purchases' | 'Opportunities' | 'Recovery center' | 'Activity';
 type Modal = 'connect' | 'upload' | 'notifications' | 'help' | 'gmail' | PurchaseView | null;
 interface Opportunity {
@@ -72,7 +72,7 @@ export function Dashboard() {
                 setError((e as Error).message);
         }
     } }).catch(() => { }); return () => { active = false; }; }, []);
-    const visible = purchases.filter(p => `${p.name} ${p.merchant}`.toLowerCase().includes(query.toLowerCase()) && (filter === 'All purchases' || p.status === filter));
+    const visible = purchases.filter(p => purchaseMatchesQuery(p, query) && (filter === 'All purchases' || p.status === filter));
     const possible = connected ? opportunities.filter(o => ['DETECTED', 'REVIEW'].includes(o.status)).reduce((n, o) => n + (o.estimatedSavingsCents ?? 0), 0) : 10800;
     const recovered = connected ? null : 3500;
     const opportunitiesCount = connected ? opportunities.length : 2;
