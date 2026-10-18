@@ -21,7 +21,9 @@ Use **Connect your account** and a provisioned per-user backend access token.
 The Next.js server validates the token against the authenticated purchase endpoint,
 then keeps it in a one-hour HTTP-only, SameSite=Strict cookie (Secure in production).
 Tokens are not stored in localStorage or embedded in a frontend bundle. Provider
-keys belong only on Railway. Auth0 interactive sign-in is not wired in this version.
+keys belong only on Railway. Auth0 interactive sign-in and user-triggered Gmail
+import are implemented but need deployment credentials and live OAuth verification.
+See [Auth0 and Gmail activation](../../docs/frontend/AUTH0_GMAIL.md).
 
 The same-origin proxy allows only documented read routes and the receipt upload /
 ingest endpoints. It does not expose arbitrary upstream URLs, internal worker routes,
@@ -44,7 +46,7 @@ invent a bank transaction or automatically create a recovery case.
 ## Current boundaries
 
 The purchase/opportunity views load the first API page. Case history, live notification
-history and Auth0 login are not connected yet. Sample actions never create a real
+history are not connected yet. Sample actions never create a real
 claim. Live Nessie reconciliation passed using an operator-provisioned synthetic
 billing case. The full live retail-to-refund demonstration still needs a current
 eligible product/seller/price/shipping offer.

@@ -1,6 +1,11 @@
 import { cookies } from 'next/headers';
 import { backendOrigin, failure, sameOrigin, sessionCookie } from '../../../lib/backend';
-export async function GET() { return Response.json({ connected: !!(await cookies()).get(sessionCookie)?.value }, { headers: { 'cache-control': 'no-store' } }); }
+import { accountSession } from '../../../lib/account-session';
+import { auth0Configured, getAuth0 } from '../../../lib/auth0';
+export async function GET() {
+    try { const session=await accountSession(); return Response.json({connected:!!session.token,method:session.method,auth0Configured:auth0Configured()},{headers:{'cache-control':'no-store'}}); }
+    catch { return failure('Your sign-in session could not be renewed. Sign in again.',401); }
+}
 export async function POST(request: Request) {
     if (!sameOrigin(request))
         return failure('Request origin was not accepted.', 403);
@@ -26,5 +31,9 @@ export async function POST(request: Request) {
         return failure('Could not connect. Check your token and try again.', 502);
     }
 }
-export async function DELETE(request: Request) { if (!sameOrigin(request))
-    return failure('Request origin was not accepted.', 403); (await cookies()).delete(sessionCookie); return Response.json({ connected: false }); }
+export async function DELETE(request: Request) {
+    if (!sameOrigin(request))return failure('Request origin was not accepted.',403);
+    (await cookies()).delete(sessionCookie);
+    const session=await getAuth0()?.getSession();
+    return Response.json({connected:false,...(session?{logoutUrl:'/auth/logout'}:{})});
+}

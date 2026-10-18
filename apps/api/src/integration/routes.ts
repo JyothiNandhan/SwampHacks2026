@@ -7,10 +7,13 @@ import { registry, openApiDocument } from './openapi.js';
 import { ApiError, authenticate, bearer, equalSecret, RequestLimiter, type Identity } from './security.js';
 import { transaction, uuid } from './database.js';
 import type { IntegrationConfig } from './config.js';
+import { auth0Bearer, auth0Identity, createAuth0Verifier } from './auth0.js';
+import { registerGmailRoutes } from './gmail.js';
 
 declare module 'fastify' { interface FastifyRequest { identity: Identity | null } }
 export function registerBackendRoutes(app: FastifyInstance, config: IntegrationConfig, service: BackendService | null) {
   const limiter = new RequestLimiter();
+  const verifyAuth0 = config.AUTH0_ISSUER && config.AUTH0_AUDIENCE ? createAuth0Verifier(config.AUTH0_ISSUER,config.AUTH0_AUDIENCE) : null;
   app.decorateRequest('identity', null);
   app.addHook('onRequest', async request => {
     const path = request.url.split('?')[0];
@@ -22,7 +25,11 @@ export function registerBackendRoutes(app: FastifyInstance, config: IntegrationC
       if (!config.INTERNAL_WORKER_TOKEN || !equalSecret(token,config.INTERNAL_WORKER_TOKEN)) throw new ApiError('UNAUTHORIZED',401);
       return;
     }
-    request.identity = authenticate(request, config.API_TOKENS_JSON);
+    try { request.identity = authenticate(request, config.API_TOKENS_JSON); }
+    catch {
+      if (!verifyAuth0 || !service) throw new ApiError('UNAUTHORIZED',401);
+      request.identity = await auth0Identity(service.pool,await verifyAuth0(auth0Bearer(request)));
+    }
     limiter.consume(`user:${request.identity.userId}`);
   });
   app.addHook('onSend', async (_request,reply,payload) => {
@@ -30,6 +37,7 @@ export function registerBackendRoutes(app: FastifyInstance, config: IntegrationC
     return payload;
   });
   app.get('/openapi.json', async () => openApiDocument());
+  registerGmailRoutes(app,config,service);
   app.get('/docs', async (_request,reply) => {
     reply.header('content-security-policy', "default-src 'none'; style-src 'unsafe-inline'");
     return reply.type('text/html').send(`<!doctype html><html lang="en"><meta charset="utf-8"><title>MoneyBack API</title><style>body{font:16px system-ui;max-width:1000px;margin:3rem auto;padding:1rem}code{font-family:monospace}li{margin:1rem 0}</style><h1>MoneyBack OS API</h1><p>Use a provisioned Bearer token. Financial records are restricted to the token's user. Deposits represent simulated Nessie inflows.</p><p><a href="/openapi.json">OpenAPI 3.1 specification</a> — import this specification into Postman or Bruno with the same Authorization header.</p><ul>${registry.routes.map(route=>`<li><code>${route.method} ${route.prefix===false?'':'/api/v1'}${route.path}</code> — ${route.responseSchema}${route.requestSchema?` (body: ${route.requestSchema})`:''}</li>`).join('')}</ul></html>`);

@@ -28,7 +28,7 @@ async function seed() {
 }
 test('migration executes on PostgreSQL, replays safely and detects edited migration history', async () => {
   const { db, client } = database();
-  expect(await migrate(client)).toEqual(['001_init_tiger_data', '002_serpapi_source']);
+  expect(await migrate(client)).toEqual(['001_init_tiger_data', '002_serpapi_source', '003_auth0_gmail']);
   expect(await migrate(client)).toEqual([]);
   const { rows } = await db.query<{ tablename: string }>("SELECT tablename FROM pg_tables WHERE schemaname='public'");
   expect(rows.map(row => row.tablename)).toEqual(expect.arrayContaining([
@@ -38,7 +38,7 @@ test('migration executes on PostgreSQL, replays safely and detects edited migrat
   ]));
   await db.exec("UPDATE schema_migrations SET checksum='tampered'");
   await expect(migrate(client)).rejects.toThrow('checksum mismatch');
-  expect((await db.query('SELECT * FROM schema_migrations')).rows).toHaveLength(2);
+  expect((await db.query('SELECT * FROM schema_migrations')).rows).toHaveLength(3);
 }, 30000);
 test('failed schema creation rolls back both tables and migration ledger', async () => {
   const { db, client } = database();
@@ -88,7 +88,7 @@ test('SerpApi migration upgrades an existing schema and preserves historical obs
  const user=(await db.query<{id:string}>("INSERT INTO users(email) VALUES('upgrade@example.com') RETURNING id")).rows[0].id;
  const insert="INSERT INTO product_offers(user_id,source,retailer_name,product_name,condition,price_cents,product_url,observed_at) VALUES($1,$2,'Store','Watch','UNKNOWN',1000,'https://example.com/watch',NOW())";
  await db.query(insert,[user,'BEST_BUY']);
- expect(await migrate(client)).toEqual(['002_serpapi_source']);
+ expect(await migrate(client)).toEqual(['002_serpapi_source','003_auth0_gmail']);
  await db.query(insert,[user,'SERPAPI']);
  expect((await db.query('SELECT source FROM product_offers ORDER BY source')).rows).toEqual([{source:'BEST_BUY'},{source:'SERPAPI'}]);
  await expect(db.query(insert,[user,'UNTRUSTED'])).rejects.toThrow();

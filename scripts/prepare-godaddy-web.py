@@ -57,6 +57,8 @@ for directory in ("app", "components", "lib", "public"):
     if (web / directory).exists():
         copy_source(web / directory, output / directory)
 shutil.copy2(web / "tsconfig.json", output / "tsconfig.json")
+if (web / "middleware.ts").exists():
+    shutil.copy2(web / "middleware.ts", output / "middleware.ts")
 # next-env.d.ts is generated and ignored in the repository. Next creates it
 # during build; exporting source must also work in a fresh CI checkout.
 config = (web / "next.config.ts").read_text()

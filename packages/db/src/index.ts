@@ -26,6 +26,7 @@ export const tigerDataMigrations: TigerDataMigration[] = [
     sql: migrationSql,
   },
   {id: '002_serpapi_source', name: '002_serpapi_source', description: 'Allow accurately labeled SerpApi observations while preserving historic sources.', sql: serpApiSql},
+  {id: '003_auth0_gmail', name: '003_auth0_gmail', description: 'Isolated Auth0 identities, encrypted Gmail connections, expiring OAuth states and replay-safe receipt imports.', sql: readFileSync(resolve(currentDir, 'migrations/003_auth0_gmail.sql'), 'utf8')},
 ];
 
 export const tigerDataMigrationOrder = tigerDataMigrations.map((migration) => migration.id);
