@@ -23,6 +23,13 @@ export function receiptUploadFormat(file: { name: string; type: string; size: nu
     return format;
 }
 
+export function receiptBytesToBase64(bytes: Uint8Array) {
+    const chunks: string[] = [];
+    for (let offset = 0; offset < bytes.length; offset += 0x8000)
+        chunks.push(String.fromCharCode(...bytes.subarray(offset, offset + 0x8000)));
+    return btoa(chunks.join(''));
+}
+
 export function uploadErrorMessage(status: number, code?: string) {
     const messages: Record<string, string> = {
         UNSUPPORTED_MEDIA_TYPE: 'The receipt file type does not match its source. Try uploading it again.',

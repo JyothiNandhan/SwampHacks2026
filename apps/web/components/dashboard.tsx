@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './icon';
-import { receiptUploadFormat } from '../lib/receipt-upload';
+import { receiptBytesToBase64, receiptUploadFormat } from '../lib/receipt-upload';
 import { demoPurchases, money, purchaseMatchesQuery, type PurchaseView } from '../lib/demo';
+import { jsonRequest as request } from '../lib/client-request';
 type Section = 'Overview' | 'Purchases' | 'Opportunities' | 'Recovery center' | 'Activity';
 type Modal = 'connect' | 'upload' | 'notifications' | 'help' | 'gmail' | PurchaseView | null;
 interface Opportunity {
@@ -17,8 +18,6 @@ interface Case {
     status: string;
     opportunityId: string;
 }
-async function request(path: string, init?: RequestInit) { const r = await fetch(path, { ...init, headers: { ...(init?.body ? { 'content-type': 'application/json' } : {}), ...init?.headers } }); const body = await r.json(); if (!r.ok)
-    throw new Error(body.error?.message ?? 'Something went wrong. Please try again.'); return body; }
 export function Dashboard() {
     const [section, setSection] = useState<Section>('Overview');
     const [modal, setModal] = useState<Modal>(null);
@@ -109,10 +108,7 @@ export function Dashboard() {
         const format = receiptUploadFormat(file);
         setUploadSource(format.source);
         const bytes = new Uint8Array(await file.arrayBuffer());
-        let binary = '';
-        for (const byte of bytes)
-            binary += String.fromCharCode(byte);
-        const uploaded = await request('/api/backend/documents', { method: 'POST', body: JSON.stringify({ mimeType: format.mimeType, contentBase64: btoa(binary) }) });
+        const uploaded = await request('/api/backend/documents', { method: 'POST', body: JSON.stringify({ mimeType: format.mimeType, contentBase64: receiptBytesToBase64(bytes) }) });
         await request('/api/backend/receipts/ingest', { method: 'POST', body: JSON.stringify({ source: format.source, originalFileId: uploaded.data.originalFileId }) });
         notify('Receipt extracted and securely saved. Matching is still required.');
         setModal(null);
