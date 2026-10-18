@@ -56,8 +56,9 @@ def copy_source(source, destination):
 for directory in ("app", "components", "lib", "public"):
     if (web / directory).exists():
         copy_source(web / directory, output / directory)
-for name in ("tsconfig.json", "next-env.d.ts"):
-    shutil.copy2(web / name, output / name)
+shutil.copy2(web / "tsconfig.json", output / "tsconfig.json")
+# next-env.d.ts is generated and ignored in the repository. Next creates it
+# during build; exporting source must also work in a fresh CI checkout.
 config = (web / "next.config.ts").read_text()
 # This export uses next start, with tracing rooted in the exported app.
 config = config.replace("output:'standalone',", "")
