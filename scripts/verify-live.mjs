@@ -27,7 +27,7 @@ try{
  if((process.argv.includes('--worker')||process.argv.includes('--documents'))&&health.revision!=='document-upload-v1')throw new Error('DEPLOY_LATEST_RELEASE_CHECKS_FIRST');
  const databaseUrl=new URL(process.env.DATABASE_URL);databaseUrl.searchParams.set('sslmode','verify-full');databaseUrl.searchParams.set('sslrootcert',fileURLToPath(new URL('../config/tigerdata-ca.pem',import.meta.url)));
  client=new pg.Client({connectionString:databaseUrl.toString(),connectionTimeoutMillis:10000,statement_timeout:15000});await client.connect();await client.query('SELECT 1');report.database='PASS';
- for (const id of ['001_init_tiger_data','002_serpapi_source']) {
+ for (const id of ['001_init_tiger_data','002_serpapi_source','003_auth0_gmail']) {
   const migration=(await client.query('SELECT checksum FROM schema_migrations WHERE id=$1',[id])).rows[0];
   const expected=createHash('sha256').update(readFileSync(new URL(`../packages/db/src/migrations/${id}.sql`,import.meta.url),'utf8')).digest('hex');
   if(migration?.checksum!==expected)throw new Error('MIGRATION_CHECKSUM_MISMATCH');
