@@ -8,14 +8,16 @@ const env={NODE_ENV:'test',INTERNAL_WORKER_TOKEN:worker,API_TOKENS_JSON:JSON.str
 test('financial routes and documentation fail closed; worker credentials cannot act as a user',async()=>{
   const app=buildApp({config:loadConfig(env),logger:false});try{
     expect((await app.inject('/health')).statusCode).toBe(200);
-    for(const url of ['/api/v1/purchases','/docs','/openapi.json']){
+    for(const url of ['/api/v1/purchases','/api/v1/email/gmail','/docs','/openapi.json']){
       expect((await app.inject(url)).statusCode).toBe(401);
       expect((await app.inject({url,headers:{authorization:`Bearer ${worker}`}})).statusCode).toBe(401);
     }
     const headers={authorization:`Bearer ${token}`};
     expect((await app.inject({url:'/api/v1/purchases',headers})).statusCode).toBe(503);
     const spec=await app.inject({url:'/openapi.json',headers});expect(spec.statusCode).toBe(200);
-    expect(Object.keys(spec.json().paths)).toHaveLength(20);
+    expect(Object.keys(spec.json().paths)).toHaveLength(24);
+    expect(spec.json().paths['/api/v1/email/gmail/import'].post.security).toEqual([{bearerAuth:[]}]);
+    expect((await app.inject({url:'/api/v1/email/gmail',headers})).json().data).toMatchObject({configured:false,connected:false});
     expect(spec.headers['cache-control']).toBe('no-store');
     expect((await app.inject({method:'POST',url:'/api/v1/monitoring/prices/run',headers,payload:{purchaseIds:[userId]}})).statusCode).toBe(403);
     expect((await app.inject({url:'/api/v1/offers/not-uuid',headers})).statusCode).toBe(400);
