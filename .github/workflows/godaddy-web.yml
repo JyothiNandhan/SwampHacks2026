@@ -1,0 +1,59 @@
+name: Sync GoDaddy frontend
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: godaddy-web
+  cancel-in-progress: false
+jobs:
+  sync:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Export independent npm frontend
+        run: python3 scripts/prepare-godaddy-web.py
+      - name: Validate production install and build
+        working-directory: dist/godaddy-web
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          npm ci --omit=dev --no-audit --no-fund
+          npm run build
+      - name: Publish validated source to deployment branch
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$SOURCE_SHA" ]; then
+            echo 'A newer main commit exists; skipping this older export.'
+            exit 0
+          fi
+          publish_dir="$(mktemp -d)"
+          git worktree add --detach "$publish_dir" HEAD
+          cd "$publish_dir"
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
+          if git show-ref --verify --quiet refs/remotes/origin/godaddy-web; then
+            git checkout -B godaddy-web origin/godaddy-web
+          else
+            git checkout --orphan godaddy-web
+          fi
+          git rm -rf --ignore-unmatch .
+          rsync -a --exclude=node_modules --exclude=.next --exclude='*.tsbuildinfo' "$GITHUB_WORKSPACE/dist/godaddy-web/" ./
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .
+          if git diff --cached --quiet; then
+            echo 'Frontend deployment source already current.'
+            exit 0
+          fi
+          git commit -m "Deploy frontend from $SOURCE_SHA"
+          git push origin HEAD:refs/heads/godaddy-web
